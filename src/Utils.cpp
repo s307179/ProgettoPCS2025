@@ -220,8 +220,8 @@ void Export_polyhedron(Polyhedron &P)
             ofile3 << ';' << E(j,id);
         }
         ofile3 << '\n';
-        ofile3.close();
     }
+    ofile3.close();
 
     //Cell3Ds.txt
     ofstream ofile4("Cell3Ds.txt");
