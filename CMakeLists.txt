@@ -57,16 +57,11 @@ add_executable(${PROJECT_NAME}
 
 
 # To read our core data base
-set(POLYHEDRON_TYPES "tetrahedron" "octahedron" "icosahedron")
+set(POLYHEDRON_TYPES "tetrahedron" "cube" "octahedron" "icosahedron" "dodecahedron")
 
 foreach(poly_type ${POLYHEDRON_TYPES})
-    file(COPY
-        ${CMAKE_CURRENT_SOURCE_DIR}/raw_polyhedron/${poly_type}/Cell0Ds.txt
-        ${CMAKE_CURRENT_SOURCE_DIR}/raw_polyhedron/${poly_type}/Cell1Ds.txt
-        ${CMAKE_CURRENT_SOURCE_DIR}/raw_polyhedron/${poly_type}/Cell2Ds.txt
-        ${CMAKE_CURRENT_SOURCE_DIR}/raw_polyhedron/${poly_type}/Cell3Ds.txt
-        DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/raw_polyhedron/${poly_type}
-    )
+    file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Platonic_solids/${poly_type}.txt  
+      DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 endforeach()
 
 target_link_libraries(${PROJECT_NAME} ${Polyhedron_LINKED_LIBRARIES})
