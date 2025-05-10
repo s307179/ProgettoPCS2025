@@ -9,5 +9,6 @@ using namespace PolyhedronLibrary;
 int main()
 {   
     cout<<"Il progetto compila!"<<endl;
+    cout<<"bdkjbjkdk"<<endl;
     return 0;
 }

@@ -26,7 +26,8 @@ struct Polyhedron
     MatrixXd cell0Ds_coordinates;
     MatrixXi cell1Ds_extrema;
 
-    vector<vector<unsigned int>> cell2Ds_vertices;
-    vector<vector<unsigned int>> cell2Ds_edges;
+    MatrixXi cell2Ds_vertices;
+    MatrixXi cell2Ds_edges;
 };
+
 }
