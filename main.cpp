@@ -20,9 +20,9 @@ int main(int argc, char* argv[])
     const unsigned int c = stoi(argv[4]);
 
     Polyhedron P;
-    if(! Import_platonic_solid(p, q, P))
+    if(!Import_platonic_solid(p, q, P))
     {
-        cerr<<"Error: the platonic solid {p,q} could not be imported"<<endl;
+        cerr<<"Error: the platonic solid {p,q} could not be imported, check the value of p and q"<<endl;
         return 2;
     }
     
@@ -43,6 +43,11 @@ int main(int argc, char* argv[])
 
     cout<<D<<endl;
     cout<<endl;
+
+    
+    Export_polyhedron(P); //To create the CellXs.txt files
+    
+    
 
     
 

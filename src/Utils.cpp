@@ -2,17 +2,15 @@
 
 #include <iostream>
 #include <fstream>
-
+#include <iomanip>
 
 namespace PolyhedronLibrary{
 
 bool Import_platonic_solid(const unsigned int &p, const unsigned int &q, Polyhedron &P)
 {
     //To establish the corresponding platonic solid {p,q}
-    string poly_name = "dodecahedron";
-    unsigned int V = 20;
-    unsigned int E = 30;
-    unsigned int F = 12;
+    string poly_name;
+    unsigned int V, E, F;
     if(p == 3 && q == 3) 
     {
         poly_name = "tetrahedron";
@@ -41,6 +39,14 @@ bool Import_platonic_solid(const unsigned int &p, const unsigned int &q, Polyhed
         E = 12;
         F = 6;    
     }
+    else if(p == 5 && q == 3)
+    {
+        poly_name = "dodecahedron";
+        V = 20;
+        E = 30;
+        F = 12;
+    }
+    else return false;
     
     P.num_cell0Ds = V;
     P.num_cell1Ds = E;
@@ -167,9 +173,76 @@ bool Import_platonic_solid(const unsigned int &p, const unsigned int &q, Polyhed
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool Export_polyhedron(Polyhedron &P)
+void Export_polyhedron(Polyhedron &P)
 {
-    return true;
+    //Cell0Ds.txt
+    ofstream ofile1("Cell0Ds.txt");
+    ofile1 << "Id;ShortPath;X;Y;Z\n"; //header 
+    
+    const MatrixXd &A = P.cell0Ds_coordinates;
+    for(unsigned int id=0; id < P.num_cell0Ds; id++)
+    {
+        ofile1 << defaultfloat << id << ';' << 0 << ';' << scientific << setprecision(16) << A(0,id) << ';' << A(1,id) << ';' << A(2,id) << '\n';
+    }
+    ofile1.close();
+
+    //Cell1Ds.txt
+    ofstream ofile2("Cell1Ds.txt");
+    ofile2 << "Id;ShortPath;Origin;End\n"; //header
+
+    const MatrixXi &B = P.cell1Ds_extrema;
+    for(unsigned int id=0; id < P.num_cell1Ds; id++)
+    {
+        ofile2 << id << ';' << 0 << ';' << B(0,id) << ';' << B(1,id) << '\n';
+    }
+    ofile2.close();
+
+    //Cell2Ds.txt
+    ofstream ofile3("Cell2Ds.txt");
+    ofile3 << "Id;NumVertices;Vertices;NumEdges;Edges\n"; //header
+    
+    /*We have to respect the sequential rule described in the pdf project, 
+    but during the filling of the 2 matrix for cell2Ds properties, we already check this,
+    we can easly read the matrix: cell2Ds_vertices and cell2Ds_edges*/
+    const MatrixXi &V = P.cell2Ds_vertices;
+    const MatrixXi &E = P.cell2Ds_edges;
+    for(unsigned int id=0; id < P.num_cell2Ds; id++)
+    {
+        ofile3 << id << ';' << V.rows();
+        for(unsigned int i=0; i < V.rows(); i++)
+        {
+            ofile3 << ';' << V(i,id);
+        }
+
+        ofile3 << ';' << E.rows();
+        for(unsigned int j=0; j < E.rows(); j++)
+        {
+            ofile3 << ';' << E(j,id);
+        }
+        ofile3 << '\n';
+    }
+
+    //Cell3Ds.txt
+    ofstream ofile4("Cell3Ds.txt");
+    ofile4 << "Id;NumVertices;Vertices;NumEdges;Edges;NumFaces;Faces\n";
+
+    ofile4 << 0 << ';' << P.num_cell0Ds;
+    for(unsigned int id_vert=0; id_vert < P.num_cell0Ds; id_vert++)
+        ofile4 << ';' << id_vert;
+    
+    ofile4 << ';' << P.num_cell1Ds;
+    for(unsigned int id_edge=0; id_edge < P.num_cell1Ds; id_edge++)
+        ofile4 << ';' << id_edge;
+
+    ofile4 << ';' << P.num_cell2Ds;
+    for(unsigned int id_face=0; id_face < P.num_cell2Ds; id_face++)
+        ofile4 << ';' << id_face;
+    ofile4 << '\n';
+
 }
+
+
+
+
 
 }
