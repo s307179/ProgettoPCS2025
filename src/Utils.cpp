@@ -220,6 +220,7 @@ void Export_polyhedron(Polyhedron &P)
             ofile3 << ';' << E(j,id);
         }
         ofile3 << '\n';
+        ofile3.close();
     }
 
     //Cell3Ds.txt
@@ -238,7 +239,7 @@ void Export_polyhedron(Polyhedron &P)
     for(unsigned int id_face=0; id_face < P.num_cell2Ds; id_face++)
         ofile4 << ';' << id_face;
     ofile4 << '\n';
-
+    ofile4.close();
 }
 
 
