@@ -26,6 +26,7 @@ int main(int argc, char* argv[])
         return 2;
     }
     
+    
     //To visulize by terminal a polyhedron 
     Visualize_polyhedron(P);
 

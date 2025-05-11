@@ -246,28 +246,28 @@ void Export_polyhedron(Polyhedron &P)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Visualize_polyhedron(Polyhedron &P)
 {
-    cout << "num_cell0Ds: " << P.num_cell0Ds << endl;
-    cout << "num_cell1Ds: " << P.num_cell1Ds << endl;
-    cout << "num_cell2Ds: " << P.num_cell2Ds << endl;
-    cout << "num_cell3Ds: " << P.num_cell3Ds << endl;
+    cout << "num_cell0Ds: " << P.num_cell0Ds << " (vertices V)" << endl;
+    cout << "num_cell1Ds: " << P.num_cell1Ds << " (edges E)" << endl;
+    cout << "num_cell2Ds: " << P.num_cell2Ds << " (faces F)" << endl;
+    cout << "num_cell3Ds: " << P.num_cell3Ds << " (polyhedron P)" << endl;
     cout << endl;
 
     cout << "cell0Ds_id = [";
     for(unsigned int i=0; i < P.num_cell0Ds; i++)
         cout << ' ' << P.cell0Ds_id[i];
-    cout << " ]" << endl;
+    cout << " ]" << " (vertices id)" << endl;
 
     cout << "cell1Ds_id = [";
     for(unsigned int i=0; i < P.num_cell1Ds; i++)
         cout << ' ' << P.cell1Ds_id[i];
-    cout << " ]" << endl;
+    cout << " ]" << " (edges id)" << endl;
 
     cout << "cell2Ds_id = [";
     for(unsigned int i=0; i < P.num_cell2Ds; i++)
-        cout << ' ' << P.cell02Ds_id[i];
-    cout << " ]" << endl;
+        cout << ' ' << P.cell2Ds_id[i];
+    cout << " ]" << " (faces id)" << endl;
 
-    cout << "cell2Ds_id = [ " << P.cell3D_id << " ]" <<endl;
+    cout << "cell3D_id = [ " << P.cell3D_id << " ]" << " (polyhedron id)" <<endl;
     cout << endl;
 
     Eigen::MatrixXd &A = P.cell0Ds_coordinates;
