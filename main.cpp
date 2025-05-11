@@ -32,22 +32,33 @@ int main(int argc, char* argv[])
     Eigen::MatrixXi &C = P.cell2Ds_vertices;
     Eigen::MatrixXi &D = P.cell2Ds_edges;
 
+    cout<<"Cell0Ds_coordinates: "<<endl;
     cout<<A<<endl;
     cout<<endl;
 
+    cout<<"Cell1Ds_extrema: "<<endl;
     cout<<B<<endl;
     cout<<endl;
     
+    cout<<"Cell2Ds_vertices: "<<endl;
     cout<<C<<endl;
     cout<<endl;
 
+    cout<<"Cell2Ds_edges: "<<endl;
     cout<<D<<endl;
     cout<<endl;
 
+    //To create the CellXs.txt files
+    Export_polyhedron(P); 
     
-    Export_polyhedron(P); //To create the CellXs.txt files
-    
-    
+     //To export the polyhedron in Paraview
+    Gedim::UCDUtilities utilities;
+    utilities.ExportPoints("./Cell0Ds.inp",
+                           P.cell0Ds_coordinates);
+
+    utilities.ExportSegments("./Cell1Ds.inp",
+                             P.cell0Ds_coordinates,
+                             P.cell1Ds_extrema);
 
     
 
