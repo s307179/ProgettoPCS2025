@@ -17,6 +17,10 @@ bool Import_platonic_solid(const unsigned int &p, const unsigned int &q, Polyhed
 P: a Polyhedron struct */
 void Export_polyhedron(Polyhedron &P);
 
+/*Function to visulaize every properties of a input Polyhedron struct
+P: a Polyhedron struct*/
+void Visualize_polyhedron(Polyhedron &P);
+
 }
 
 

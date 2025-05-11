@@ -243,6 +243,55 @@ void Export_polyhedron(Polyhedron &P)
 }
 
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Visualize_polyhedron(Polyhedron &P)
+{
+    cout << "num_cell0Ds: " << P.num_cell0Ds << endl;
+    cout << "num_cell1Ds: " << P.num_cell1Ds << endl;
+    cout << "num_cell2Ds: " << P.num_cell2Ds << endl;
+    cout << "num_cell3Ds: " << P.num_cell3Ds << endl;
+    cout << endl;
+
+    cout << "cell0Ds_id = [";
+    for(unsigned int i=0; i < P.num_cell0Ds; i++)
+        cout << ' ' << P.cell0Ds_id[i];
+    cout << " ]" << endl;
+
+    cout << "cell1Ds_id = [";
+    for(unsigned int i=0; i < P.num_cell1Ds; i++)
+        cout << ' ' << P.cell1Ds_id[i];
+    cout << " ]" << endl;
+
+    cout << "cell2Ds_id = [";
+    for(unsigned int i=0; i < P.num_cell2Ds; i++)
+        cout << ' ' << P.cell02Ds_id[i];
+    cout << " ]" << endl;
+
+    cout << "cell2Ds_id = [ " << P.cell3D_id << " ]" <<endl;
+    cout << endl;
+
+    Eigen::MatrixXd &A = P.cell0Ds_coordinates;
+    Eigen::MatrixXi &B = P.cell1Ds_extrema;
+    Eigen::MatrixXi &C = P.cell2Ds_vertices;
+    Eigen::MatrixXi &D = P.cell2Ds_edges;
+
+    cout<<"Cell0Ds_coordinates: "<<endl;
+    cout<<A<<endl;
+    cout<<endl;
+
+    cout<<"Cell1Ds_extrema: "<<endl;
+    cout<<B<<endl;
+    cout<<endl;
+    
+    cout<<"Cell2Ds_vertices: "<<endl;
+    cout<<C<<endl;
+    cout<<endl;
+
+    cout<<"Cell2Ds_edges: "<<endl;
+    cout<<D<<endl;
+    cout<<endl;
+}
+
 
 
 

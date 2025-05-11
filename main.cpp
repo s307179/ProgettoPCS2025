@@ -26,27 +26,8 @@ int main(int argc, char* argv[])
         return 2;
     }
     
-    Eigen::MatrixXd &A = P.cell0Ds_coordinates;
-    Eigen::MatrixXi &B = P.cell1Ds_extrema;
-
-    Eigen::MatrixXi &C = P.cell2Ds_vertices;
-    Eigen::MatrixXi &D = P.cell2Ds_edges;
-
-    cout<<"Cell0Ds_coordinates: "<<endl;
-    cout<<A<<endl;
-    cout<<endl;
-
-    cout<<"Cell1Ds_extrema: "<<endl;
-    cout<<B<<endl;
-    cout<<endl;
-    
-    cout<<"Cell2Ds_vertices: "<<endl;
-    cout<<C<<endl;
-    cout<<endl;
-
-    cout<<"Cell2Ds_edges: "<<endl;
-    cout<<D<<endl;
-    cout<<endl;
+    //To visulize by terminal a polyhedron 
+    Visualize_polyhedron(P);
 
     //To create the CellXs.txt files
     Export_polyhedron(P); 
