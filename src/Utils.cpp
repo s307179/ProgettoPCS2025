@@ -510,7 +510,6 @@ void ClassI_polyhedron(Polyhedron &P, const unsigned int b, unsigned int p, unsi
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 void project_points_onto_sphere(Polyhedron &P)
 	 {
 	// necessary info of Polyhedron saved
@@ -537,6 +536,17 @@ void project_points_onto_sphere(Polyhedron &P)
 		{S(j,i) /= abs(norm);}
 	}	;
 	};
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
 
 
 
