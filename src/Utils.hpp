@@ -31,6 +31,14 @@ void ClassI_polyhedron(Polyhedron &P, const unsigned int b, unsigned int p, unsi
 
 
 
+
+/* Function to project each point of the polyhedron onto the sphere in the origin with unitary radius
+P: a Polyhedron struct */
+
+void project_points_onto_sphere(Polyhedron &P);
+
+
+
 }
 
 

@@ -27,27 +27,21 @@ int main(int argc, char* argv[])
         cerr<<"Error: the platonic solid {p,q} could not be imported, check the values of p and q"<<endl;
         return 2;
     }
+    
+    
+    //To visulize by terminal a polyhedron 
+    Visualize_polyhedron(P);
 
-    
-    
-    if(b < 1 && c < 1)
-    {
-        cerr<<"Error: the polyhedron could not be triangulated, check the values of b and c"<<endl;
-        return 3;
-    }
-    
-    if((b >= 1 && c == 0) || (b == 0 && c >=1)) //Class I (geodetic polyhedron)
-    {
-        if(b != 0) ClassI_polyhedron(P, b, p, q);
-        else ClassI_polyhedron(P, c, p, q);
-    }
-
-    //To visualize the polyhedron struct
+    ClassI_polyhedron(P, b, q);
     Visualize_polyhedron(P);
 
     //To create the CellXs.txt files
     Export_polyhedron(P); 
     
+	
+	
+	
+	
     //To export the polyhedron in Paraview
     Gedim::UCDUtilities utilities;
     utilities.ExportPoints("./Cell0Ds.inp",
@@ -57,7 +51,7 @@ int main(int argc, char* argv[])
                              P.cell0Ds_coordinates,
                              P.cell1Ds_extrema);
     
-
+	
     
 
     return 0;
