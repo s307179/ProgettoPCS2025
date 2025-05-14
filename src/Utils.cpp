@@ -8,7 +8,7 @@
 
 namespace PolyhedronLibrary{
 
-bool Import_platonic_solid(const unsigned int p, const unsigned int q, Polyhedron &P)
+bool Import_platonic_solid(unsigned int p, unsigned int q, Polyhedron &P)
 {
     //To establish the corresponding platonic solid {p,q}
     string poly_name;
@@ -20,33 +20,25 @@ bool Import_platonic_solid(const unsigned int p, const unsigned int q, Polyhedro
         E = 6;
         F = 4;   
     }
-    else if (p == 3 && q == 4) 
+    else if ((p == 3 && q == 4) || (p == 4 && q == 3 )) 
     {
         poly_name = "octahedron";
         V = 6;
         E = 12;
-        F = 8;    
+        F = 8;
+        
+        p = 3;
+        q = 4;
     }
-    else if (p == 3 && q == 5) 
+    else if ((p == 3 && q == 5) || (p == 5 && q == 3)) 
     {
         poly_name = "icosahedron";
         V = 12;
         E = 30;
-        F = 20;    
-    }
-    else if (p == 4 && q == 3) 
-    {
-        poly_name = "cube";
-        V = 8;
-        E = 12;
-        F = 6;    
-    }
-    else if(p == 5 && q == 3)
-    {
-        poly_name = "dodecahedron";
-        V = 20;
-        E = 30;
-        F = 12;
+        F = 20;
+        
+        p = 3;
+        q = 5;
     }
     else return false;
     
@@ -301,7 +293,7 @@ pair<vector<Eigen::Vector3d>, vector<Eigen::Vector3i>> Triangulation_basic_step(
     vector<Vector3d> vertici;
     vector<Vector3i> triangoli;
 
-    // 1. Genera i vertici in coordinate baricentriche
+    //1. Genera i vertici in coordinate baricentriche
     for (int u = 0; u <= b; u++) {
         for (int v = 0; v <= (b - u); v++) {
             int w = b - u - v;
@@ -310,7 +302,7 @@ pair<vector<Eigen::Vector3d>, vector<Eigen::Vector3i>> Triangulation_basic_step(
         }
     }
 
-    // 2. Genera i triangoli
+    //2. Genera i triangoli
     for (int u = 0; u < b; u++) 
     {
         for (int v = 0; v < (b - u); v++) 
@@ -340,7 +332,7 @@ pair<vector<Eigen::Vector3d>, vector<Eigen::Vector3i>> Triangulation_basic_step(
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
-void ClassI_polyhedron(Polyhedron &P, const unsigned int b, const unsigned int q)
+void ClassI_polyhedron(Polyhedron &P, const unsigned int b, unsigned int p, unsigned int q)
 {   
     vector<Eigen::Vector3i> new_faces;
 
@@ -407,23 +399,27 @@ void ClassI_polyhedron(Polyhedron &P, const unsigned int b, const unsigned int q
     //overload the polyhedron struct with the new data
     unsigned int T = b*b;
     unsigned int V, E, F;
-    if(q == 3)
+    if(p == 3 && q == 3)
     {
         V = 2*T + 2;
         E = 6*T;
         F = 4*T;
     }
-    else if(q == 4)
+    else if((p == 3 &&  q == 4) || (p == 4 && q == 3))
     {
         V = 4*T + 2;
         E = 12*T;
         F = 8*T;
+
+        q = 4;
     }
-    else
+    else if((p == 3 && q == 5) || (p == 5 && q == 3))
     {
         V = 10*T + 2;
         E = 30*T;
         F = 20*T;
+
+        q = 5;
     }
 
     P.num_cell0Ds = V;
