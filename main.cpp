@@ -27,10 +27,8 @@ int main(int argc, char* argv[])
         cerr<<"Error: the platonic solid {p,q} could not be imported, check the values of p and q"<<endl;
         return 2;
     }
-<<<<<<< HEAD
-
     
-    
+    //To triangulate the polyhedron
     if(b < 1 && c < 1)
     {
         cerr<<"Error: the polyhedron could not be triangulated, check the values of b and c"<<endl;
@@ -52,9 +50,6 @@ int main(int argc, char* argv[])
     //To create the CellXs.txt files
     Export_polyhedron(P); 
     
-	
-	
-	
 	
     //To export the polyhedron in Paraview
     Gedim::UCDUtilities utilities;
