@@ -29,6 +29,14 @@ pair<vector<Eigen::Vector3d>, vector<Eigen::Vector3i>> Triangulation_basic_step(
 
 void ClassI_polyhedron(Polyhedron &P, const unsigned int b, const unsigned int q);
 
+
+/* Function to project each point of the polyhedron onto the sphere in the origin with unitary radius
+P: a Polyhedron struct */
+
+void project_points_onto_sphere(Polyhedron &P)
+
+
+
 }
 
 
