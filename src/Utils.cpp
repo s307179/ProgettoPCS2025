@@ -515,7 +515,32 @@ void ClassI_polyhedron(Polyhedron &P, const unsigned int b, const unsigned int q
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
+void project_points_onto_sphere(Polyhedron &P)
+	 {
+	// necessary info of Polyhedron saved
+	MatrixXd &S = P.cell0Ds_coordinates;
+	int n = P.num_cell0Ds; 
+	// Calculate barycenter coordinated 
+	VectorXd barycenter =  VectorXd::Zero(3);
+	for (int i =0; i<n; i++)
+	{for (int j =0; j<3; j++)
+		barycenter(j) += S(j,i)/n;
+	 }
+	 // move points with respect to the barycenter
+	 for(int h = 0; h<n;h++)
+	 {
+		 for (int j =0; j<3; j++)
+		 {S(j,h) -=barycenter(j);}
+ 
+	}
+	
+	// project on the sphere
+	for (int i = 0; i<n; i++)
+	{double norm = sqrt(S(0,i)*S(0,i)+S(1,i)*S(1,i)+S(2,i)*S(2,i));
+		for (int j=0;j<3;j++)
+		{S(j,i) /= abs(norm);}
+	}	;
+	};
 
 
 
