@@ -30,10 +30,13 @@ int main(int argc, char* argv[])
     //To visulize by terminal a polyhedron 
     Visualize_polyhedron(P);
 
+    ClassI_polyhedron(P, b, q);
+    Visualize_polyhedron(P);
+
     //To create the CellXs.txt files
     Export_polyhedron(P); 
     
-     //To export the polyhedron in Paraview
+    //To export the polyhedron in Paraview
     Gedim::UCDUtilities utilities;
     utilities.ExportPoints("./Cell0Ds.inp",
                            P.cell0Ds_coordinates);
@@ -41,6 +44,7 @@ int main(int argc, char* argv[])
     utilities.ExportSegments("./Cell1Ds.inp",
                              P.cell0Ds_coordinates,
                              P.cell1Ds_extrema);
+    
 
     
 
