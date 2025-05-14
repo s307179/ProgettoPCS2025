@@ -1,7 +1,7 @@
 // prova funzione di proiezione del solido su una sfera centrata nell'origine e di raggio unitario
 
 #include "Polyhedron.hpp"
-#include <Eigen/Dense>
+#include <Eigen/Eigen>
 
 namespace PolyhedronLibrary{
  void project_points_onto_sphere(Polyhedron &P)
@@ -12,22 +12,22 @@ namespace PolyhedronLibrary{
 	//calcolo il baricentro del solido
 	VectorXd barycenter =  VectorXd::Zero(3);
 	for (int i =0; i<n; i++)
-	{{for (int j =0; j<3; j++)
-	barycenter(j) += S(i,j)/n;}
+	{for (int j =0; j<3; j++)
+		barycenter(j) += S(j,i)/n;
 	 }
 	 // traslo rispetto al baricentro
-	 for(size_t h = 0; h<n;h++)
+	 for(int h = 0; h<n;h++)
 	 {
 		 for (int j =0; j<3; j++)
-		 {S(h,j) -=barycenter(j);}
+		 {S(j,h) -=barycenter(j);}
  
 	}
 	
 	// proietto
 	for (int i = 0; i<n; i++)
-	{double norm = sqrt(S(i,0)*S(i,0)+S(i,1)*S(i,1)+S(i,2)*S(i,2));
+	{double norm = sqrt(S(0,i)*S(0,i)+S(1,i)*S(1,i)+S(2,i)*S(2,i));
 		for (int j=0;j<3;j++)
-		{S(i,j) /= abs(norm);}
+		{S(j,i) /= abs(norm);}
 	}	;
 	};
 }
