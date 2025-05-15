@@ -71,8 +71,8 @@ target_compile_options(${PROJECT_NAME} PUBLIC -fPIC)
 
 add_executable(${PROJECT_NAME}_TEST
       main_test.cpp
-      ${Sorting2_SOURCES}
-      ${Sorting2_HEADERS}
+      ${Polyhedron_SOURCES}
+      ${Polyhedron_HEADERS}
       ${src_test_sources}
       ${src_test_headers})
 
