@@ -2,11 +2,19 @@
 
 #include <iostream>
 #include <vector>
-
 #include <gtest/gtest.h>
+
 #include "Utils.hpp"
 #include "Eigen/Eigen"
+#include "Polyhedron.hpp"
+#include "Utils.hpp"
+
+
 using namespace Eigen;
+using namespace PolyhedronLibrary;
+
+
+
 namespace PolyhedronLibrary {
 	// cubo già normalizzato
 TEST(TestPolyhedron, TestProjection)

@@ -8,7 +8,7 @@ using namespace PolyhedronLibrary;
 
 int main(int argc, char* argv[])
 {   
-    if(argc < 5)
+    if(argc !=5 && argc!=7)
     {
         cerr<<"usage: "<<argv[0]<<" <p> <q> <b> <c> [<begin id vertex> <end id vertex>]"<<endl;
         return 1;
@@ -20,25 +20,36 @@ int main(int argc, char* argv[])
     const unsigned int c = stoi(argv[4]);
 
     Polyhedron P;
+
+    //To build the platonic solid
     if(!Import_platonic_solid(p, q, P))
     {
-        cerr<<"Error: the platonic solid {p,q} could not be imported, check the value of p and q"<<endl;
+        cerr<<"Error: the platonic solid {p,q} could not be imported, check the values of p and q"<<endl;
         return 2;
     }
     
-    Visualize_polyhedron(P);
-    //To visulize by terminal a polyhedron 
+    //To triangulate the polyhedron
+    if(b < 1 && c < 1)
+    {
+        cerr<<"Error: the polyhedron could not be triangulated, check the values of b and c"<<endl;
+        return 3;
+    }
     
-    ClassI_polyhedron(P, b, q);
+    if((b >= 1 && c == 0) || (b == 0 && c >=1)) //Class I (geodetic polyhedron)
+    {
+        if(b != 0) ClassI_polyhedron(P, b, p, q);
+        else ClassI_polyhedron(P, c, p, q);
+    }
+
+    //To project the polyhedron in the unitary sphere
 	project_points_onto_sphere(P);
+
+    //To visulize by terminal a polyhedron
     Visualize_polyhedron(P);
 
     //To create the CellXs.txt files
     Export_polyhedron(P); 
     
-	
-	
-	
 	
     //To export the polyhedron in Paraview
     Gedim::UCDUtilities utilities;
