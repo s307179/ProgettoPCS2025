@@ -4,8 +4,8 @@
 #include <vector>
 
 #include <gtest/gtest.h>
-#include "funzioni_di_prova.cpp"
-#include "Polyhedron.hpp"
+#include "Utils.hpp"
+#include "Eigen/Eigen"
 using namespace Eigen;
 namespace PolyhedronLibrary {
 	// cubo già normalizzato

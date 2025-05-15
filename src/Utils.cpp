@@ -539,8 +539,8 @@ void project_points_onto_sphere(Polyhedron &P)
 	{double norm = sqrt(S(0,i)*S(0,i)+S(1,i)*S(1,i)+S(2,i)*S(2,i));
 		for (int j=0;j<3;j++)
 		{S(j,i) /= abs(norm);}
-	}	;
-	};
+	}	
+	}
 
 
 
