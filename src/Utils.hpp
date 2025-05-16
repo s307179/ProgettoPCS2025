@@ -44,6 +44,11 @@ P: a Polyhedron struct */
 void project_points_onto_sphere(Polyhedron &P);
 
 
+/*Function to dualize an input polyhedron
+P: a Polyhedron struct*/
+void Dualize(Polyhedron &P);
+
+vector<unsigned int> cycled_face_for_dual(vector<unsigned int> &face_new, Eigen::MatrixXd &coord);
 
 }
 

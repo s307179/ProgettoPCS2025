@@ -28,6 +28,7 @@ int main(int argc, char* argv[])
         return 2;
     }
     
+    
     //To triangulate the polyhedron
     if(b < 1 && c < 1)
     {
@@ -40,15 +41,22 @@ int main(int argc, char* argv[])
         if(b != 0) ClassI_polyhedron(P, b, p, q);
         else ClassI_polyhedron(P, c, p, q);
     }
+    
+
+    project_points_onto_sphere(P);
+    Visualize_polyhedron(P);
+
+    Dualize(P);
+    project_points_onto_sphere(P);
 
     //To project the polyhedron in the unitary sphere
-	project_points_onto_sphere(P);
+	//project_points_onto_sphere(P);
 
     //To visulize by terminal a polyhedron
     Visualize_polyhedron(P);
 
     //To create the CellXs.txt files
-    Export_polyhedron(P); 
+    //Export_polyhedron(P); 
     
 	
     //To export the polyhedron in Paraview

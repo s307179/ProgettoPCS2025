@@ -4,7 +4,9 @@
 #include <fstream>
 #include <iomanip>
 #include <map>
-#include <set> 
+#include <set>
+#include <algorithm> // std::max std::min 
+#include <limits>
 
 namespace PolyhedronLibrary{
 
@@ -538,10 +540,263 @@ for (int i = 0; i<n; i++)
 };
 
 
+
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
+vector<unsigned int> cycled_face_for_dual(vector<unsigned int>& face_new, MatrixXd& coord) {
+    vector<unsigned int> ordered;
+    if(face_new.empty()) return ordered;
+
+    // Parametri di tolleranza
+    const double rel_epsilon = 1e-6;   // Tolleranza relativa
+    const double abs_epsilon = 1e-12;  // Tolleranza assoluta minima
+    const unsigned int invalid_id = numeric_limits<unsigned int>::max();
+
+    // Calcola la distanza minima tra i vertici
+    double min_dist = numeric_limits<double>::max();
+    for(unsigned int i = 0; i < face_new.size(); ++i) {
+        Vector3d p1 = coord.col(face_new[i]);
+        for(unsigned int j = i+1; j < face_new.size(); ++j) {
+            double d = (p1 - coord.col(face_new[j])).norm();
+            if(d < min_dist) min_dist = d;
+        }
+    }
+
+    //TODO utilizza direttamente solo la tolleranza relativa --> MODIFICA
+    // Funzione di confronto con tolleranza ibrida
+    auto are_equal = [&](double a, double b) {
+        double diff = fabs(a - b);
+        double scale = max(fabs(a), fabs(b));
+        return diff <= max(abs_epsilon, rel_epsilon * scale);
+    };
+
+    // Costruzione mappa delle adiacenze
+    map<unsigned int, pair<unsigned int, unsigned int>> adjacence_map;
+    for(unsigned int i = 0; i < face_new.size(); ++i) {
+        unsigned int id = face_new[i];
+        vector<pair<double, unsigned int>> neighbors;
+        Vector3d p = coord.col(id);
+
+        for(unsigned int j = 0; j < face_new.size(); ++j) {
+            if(i == j) continue;
+            unsigned int candidate = face_new[j];
+            double d = (p - coord.col(candidate)).norm();
+
+            if(are_equal(d, min_dist)) {
+                neighbors.emplace_back(d, candidate);
+            }
+        }
+
+        sort(neighbors.begin(), neighbors.end());
+        
+        if(neighbors.size() >= 2) {
+            adjacence_map[id] = {neighbors[0].second, neighbors[1].second};
+        } 
+        else if(neighbors.size() == 1) {
+            adjacence_map[id] = {neighbors[0].second, invalid_id};
+        } 
+        else {
+            adjacence_map[id] = {invalid_id, invalid_id};
+        }
+    }
+
+    // Attraversamento ciclico
+    ordered.push_back(face_new[0]);
+    unsigned int current = face_new[0];
+    unsigned int prev = invalid_id;
+
+    auto get_next = [&](unsigned int candidate) {
+        return (candidate != invalid_id) && 
+               (candidate != prev) && 
+               (find(ordered.begin(), ordered.end(), candidate) == ordered.end());
+    };
+
+    while(ordered.size() < face_new.size()) {
+        auto& neighbors = adjacence_map[current];
+        unsigned int next = invalid_id;
+
+        if(get_next(neighbors.first)) {
+            next = neighbors.first;
+        }
+        else if(get_next(neighbors.second)) {
+            next = neighbors.second;
+        }
+
+        if(next == invalid_id) break;
+
+        ordered.push_back(next);
+        prev = current;
+        current = next;
+    }
+
+    // Verifica finale del ciclo chiuso
+    if(!ordered.empty()) {
+        auto& last_neighbors = adjacence_map[ordered.back()];
+        bool is_closed = (last_neighbors.first == ordered[0]) || 
+                        (last_neighbors.second == ordered[0]);
+
+        if(!is_closed && ordered.size() == face_new.size()) {
+            reverse(ordered.begin(), ordered.end());
+        }
+    }
+
+    return ordered;
+}
 
 
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Dualize(Polyhedron &P)
+{   
+    unsigned int old_F = P.num_cell2Ds;
+    unsigned int old_V = P.num_cell0Ds;
+    P.num_cell0Ds = old_F;
+    P.num_cell2Ds = old_V;
+
+
+    //mapping the old_faces to new_vertices
+    Eigen::MatrixXd new_vertices = MatrixXd::Zero(3, old_F); 
+
+    Eigen::MatrixXd old_vertices = P.cell0Ds_coordinates;
+    Eigen::MatrixXi old_faces = P.cell2Ds_vertices;
+    for(unsigned int i=0; i < old_F; i++)
+    {
+        Eigen::VectorXi face = old_faces.col(i);
+
+        //compute the baricenter of the face
+        Eigen::Vector3d S = Vector3d::Zero();
+        for(unsigned int j=0; j < face.size(); j++)
+        {
+            unsigned int id = face[j];
+            Eigen::Vector3d z = old_vertices.col(id);
+            S += z;   
+        }
+        Eigen::Vector3d baricenter = S / face.size();
+
+        new_vertices.col(i) = baricenter;
+    } 
+
+    //Overload and fill cell0Ds_coordinates
+    Eigen::MatrixXd &A = P.cell0Ds_coordinates;
+    A = MatrixXd::Zero(3, old_F);
+    A = new_vertices;
+    
+    
+    //mapping the old_vertices to new_faces
+    vector<vector<unsigned int>> new_faces_by_vert;
+    new_faces_by_vert.reserve(old_V);
+    
+    for(unsigned int id=0; id < old_V; id++)
+    {   
+        vector<unsigned int> candidate_face;
+        for(unsigned int j=0; j < old_F; j++)
+        {
+            Eigen::VectorXi face = P.cell2Ds_vertices.col(j);
+            std::set<unsigned int> face_set;
+            for(unsigned int k=0; k < face.size(); k++) face_set.insert(face[k]); //fill teh set
+
+            if(face_set.count(id) > 0) candidate_face.push_back(j);
+        }
+        //the candidate face must be cyclic
+        vector<unsigned int> cyclyc = cycled_face_for_dual(candidate_face, P.cell0Ds_coordinates);
+        new_faces_by_vert.push_back(cyclyc);
+        
+    }
+
+    
+    //TODO Dualize deve funzionare per i poliedri di Goldberg-->MODIFICARE
+    ////////// da tenere mi serve per le modifiche 
+    for(int i=0; i < new_faces_by_vert.size(); i++ )
+    {
+        cout<<"face n"<<i<<" :";
+        vector<unsigned int> &vec = new_faces_by_vert[i];
+
+        for(int j=0; j < vec.size(); j++) cout<<' '<<vec[j];
+        cout<<endl;
+    }
+
+    
+    //Overload and fill cell2Ds_vertices
+    Eigen::MatrixXi &B = P.cell2Ds_vertices;
+    B = MatrixXi::Zero((new_faces_by_vert[0]).size(), old_V);
+
+    for(unsigned int i=0; i < new_faces_by_vert.size(); i++)
+    {
+        vector<unsigned int> &vec = new_faces_by_vert[i];
+        for(unsigned int j=0; j<vec.size(); j++)
+        {
+            B(j,i) = vec[j];
+        }
+    }
+
+    
+    ///////////
+    //Fill cell1Ds_extrema
+    Eigen::MatrixXi &C = P.cell1Ds_extrema;
+    C = MatrixXi::Zero(2, P.num_cell1Ds);
+    map<unsigned int, set<unsigned int>> check_map; // {edge_id, set{origin, end}}
+    unsigned int id_edge = 0;
+    for(size_t f=0; f < old_V; f++)
+    {
+        Eigen::VectorXi face = B.col(f);
+        for(unsigned int i=0; i < face.size(); i++)
+        {
+            unsigned int origin = face[i];
+            unsigned int end = face[(i+1)%(face.size())];
+
+            bool to_add = true;
+            for(auto &[key, val] : check_map)
+            {
+                if(val.count(origin) + val.count(end) > 1) to_add = false;
+            }
+
+            if(to_add && id_edge < P.num_cell1Ds)
+            {   
+                set<unsigned int> s = {origin, end};
+                check_map.insert({id_edge, s});
+                id_edge++;
+            }
+        }
+    }
+
+    for(auto &[id, o_and_e] : check_map)
+    {
+        unsigned int origin = *(o_and_e.begin());
+        unsigned int end = *(std::next(o_and_e.begin()));
+        C(0,id) = origin;
+        C(1,id) = end;
+    }
+    
+    
+    //TODO guarda se ci sono eventuali errori qui
+    //Fill MatrixXi cell2Ds_edges
+    Eigen::MatrixXi &D = P.cell2Ds_edges;
+    D = MatrixXi::Zero(new_faces_by_vert[0].size(), old_V);
+    for(unsigned int i=0; i < B.cols(); i++)
+    {
+        VectorXi f = B.col(i); //matrix B --> cell2Ds_vertices
+        for(unsigned int j=0; j < f.size(); j++)
+        {
+            unsigned int u = f[j];
+            unsigned int v = f[(j+1)%(f.size())];
+
+            for(unsigned int k=0; k < C.cols(); k++) //matrix C --> cell1Ds_extrema
+            {
+                VectorXi edge = C.col(k);
+                set<unsigned int> set_edge;
+                set_edge.insert(edge[0]);
+                set_edge.insert(edge[1]);
+
+                if ((set_edge.count(u) + set_edge.count(v) > 1) && u != v) 
+                {
+                    D(j,i) = k;
+                }    
+            }
+        }
+    }
+    
+}
 
 
 
