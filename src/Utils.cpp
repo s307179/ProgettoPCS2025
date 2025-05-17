@@ -7,9 +7,84 @@
 #include <set>
 #include <algorithm> // std::max std::min 
 #include <limits>
+#include <cmath>
 
 namespace PolyhedronLibrary{
 
+void finish_to_fill_struct(Polyhedron &P)
+{
+    vector<vector<unsigned int>> &B = P.cell2Ds_vertices;
+    //Fill cell1Ds_extrema
+    //map for sorted pair of vertices --> Id egde 
+    std::map<std::pair<unsigned int, unsigned int>, unsigned int> edge_map;
+    Eigen::MatrixXi &C = P.cell1Ds_extrema;
+    C = MatrixXi::Zero(2, P.num_cell1Ds);
+    unsigned int id_edge = 0;
+    for (unsigned int f = 0; f < P.num_cell2Ds; ++f) {
+        vector<unsigned int> &face = B[f];
+        for (unsigned int i = 0; i < face.size(); ++i) {
+            unsigned int origin = face[i];
+            unsigned int end = face[(i + 1) % face.size()];
+
+            //I sort the vertices to avoid copy (es. (1,0) -> (0,1))
+            unsigned int u = std::min(origin, end);
+            unsigned int v = std::max(origin, end);
+            std::pair<unsigned int, unsigned int> key(u, v);
+
+            //Add the edge only if it already not exist 
+            if (edge_map.find(key) == edge_map.end()) {
+                edge_map[key] = id_edge;
+                C(0, id_edge) = u;
+                C(1, id_edge) = v;
+                id_edge++;
+            }
+        }
+    }
+
+    //To verify if the number of generated edges is correct
+    assert(id_edge == P.num_cell1Ds);
+    
+    // Fill cell2Ds_edges
+    vector<vector<unsigned int>> &D = P.cell2Ds_edges;
+    D.reserve(P.num_cell2Ds);
+    D.clear();
+    for (unsigned int i = 0; i < B.size(); ++i) {
+        vector<unsigned int> &face = B[i];
+        vector<unsigned int> edges_f;
+        edges_f.reserve(face.size());
+        for (unsigned int j = 0; j < face.size(); ++j) {
+            unsigned int origin = face[j];
+            unsigned int end = face[(j + 1) % face.size()];
+
+            //I sort the vertex to find the correct key in the edge_map
+            unsigned int u = std::min(origin, end);
+            unsigned int v = std::max(origin, end);
+            std::pair<unsigned int, unsigned int> key(u, v);
+
+            //I pick the id up from the edge_map
+            edges_f.push_back(edge_map[key]);
+        }
+        D.push_back(edges_f);
+    }
+
+    //Fill cell0Ds_id, cell1Ds_id, cell2Ds_id
+    vector<unsigned int> &cell0Ds_id = P.cell0Ds_id;
+    vector<unsigned int> &cell1Ds_id = P.cell1Ds_id;
+    vector<unsigned int> &cell2Ds_id = P.cell2Ds_id;
+    cell0Ds_id.reserve(P.num_cell0Ds);
+    cell1Ds_id.reserve(P.num_cell1Ds);
+    cell2Ds_id.reserve(P.num_cell2Ds);
+    P.cell0Ds_id.clear();
+    P.cell1Ds_id.clear();
+    P.cell2Ds_id.clear();
+
+    for(unsigned int i=0; i < P.num_cell0Ds; i++) cell0Ds_id.push_back(i);
+    for(unsigned int i=0; i < P.num_cell1Ds; i++) cell1Ds_id.push_back(i);
+    for(unsigned int i=0; i < P.num_cell2Ds; i++) cell2Ds_id.push_back(i);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Import_platonic_solid(unsigned int p, unsigned int q, Polyhedron &P)
 {
     //To establish the corresponding platonic solid {p,q}
@@ -47,12 +122,6 @@ bool Import_platonic_solid(unsigned int p, unsigned int q, Polyhedron &P)
     P.num_cell0Ds = V;
     P.num_cell1Ds = E;
     P.num_cell2Ds = F;
-    P.num_cell3Ds = 1;
-    
-    P.cell0Ds_id.reserve(V);
-    P.cell1Ds_id.reserve(E);
-    P.cell2Ds_id.reserve(F);
-    P.cell3D_id = 0;
 
     ifstream ifile("./" + poly_name + ".txt");
     if(ifile.fail()) return false;
@@ -61,10 +130,8 @@ bool Import_platonic_solid(unsigned int p, unsigned int q, Polyhedron &P)
     //Fill the matrix cell0Ds_coordinates <--> matrix A
     MatrixXd &A = P.cell0Ds_coordinates; 
     A = MatrixXd::Zero(3, V);
-    for(size_t i=0; i < V; i++)
+    for(unsigned int i=0; i < V; i++)
     {
-        P.cell0Ds_id.push_back(i);
-        
         char trash;
         double x, y, z;
         ifile >> trash >> x >> y >> z;
@@ -75,95 +142,26 @@ bool Import_platonic_solid(unsigned int p, unsigned int q, Polyhedron &P)
 
     //Cell2Ds properties (faces)
     //Fill the matrix cell2Ds_vertices <--> matrix B 
-    MatrixXi &B = P.cell2Ds_vertices;
-    MatrixXi &C = P.cell2Ds_edges;
-    B = MatrixXi::Zero(p, F);
-    C = MatrixXi::Zero(p, F);
-    for(size_t i=0; i < F; i++)
+    vector<vector<unsigned int>> &B = P.cell2Ds_vertices;
+    B.reserve(F);
+    for(unsigned int i=0; i < F; i++)
     {
-        P.cell2Ds_id.push_back(i);
-
         char trash;
         ifile >> trash;
+        vector<unsigned int> face;
+        face.reserve(p);
         for(size_t j=0; j < p; j++)
         {
             unsigned int u;
             ifile >> u;
-            B(j,i) = u;
+            face.push_back(u);
         }
+        B.push_back(face);
     }
 
-    
-    //Fill the matrix cell1Ds_extrema <--> matrix D
-    MatrixXi &D = P.cell1Ds_extrema;
-    D = MatrixXi::Zero(2, E);
+    //Call the function to finish to fill the polyhedron struct  
+    finish_to_fill_struct(P);
 
-    VectorXi check_valence;
-    check_valence = VectorXi::Zero(P.num_cell0Ds);
-    unsigned int id_edge = 0;
-    for(unsigned int i=0; i < B.cols(); i++)
-    {   
-        VectorXi face = B.col(i);
-        for(unsigned int k=0; k < p; k++)
-        {
-            unsigned int origin = face[k];
-            unsigned int end = face[(k+1)%p];
-
-            if(check_valence[origin] < q && check_valence[end] < q)
-            {   
-                bool not_added = true;
-
-                for(unsigned int j=0; j < id_edge; j++)
-                {
-                    VectorXi edge = D.col(j);
-                    unsigned int old_origin = edge[0];
-                    unsigned int old_end = edge[1];
-
-                    if(old_origin == end && old_end == origin)
-                    {
-                        not_added = false;
-                    }
-                }
-
-                if(not_added)
-                {
-                    P.cell1Ds_id.push_back(id_edge);
-
-                    D(0,id_edge) = origin;
-                    D(1,id_edge) = end;
-                    id_edge++;
-
-                    check_valence[origin]++;
-                    check_valence[end]++;
-                }
-                
-            }
-        }
-    }
-
-    //Fill the matrix cell2Ds_edges <--> matrix C
-    for(unsigned int i=0; i < B.cols(); i++)
-    {
-        VectorXi face = B.col(i); //matrix B --> cell2Ds_vertices
-        for(unsigned int j=0; j < p; j++)
-        {
-            unsigned int u = face[j];
-            unsigned int v = face[(j+1)%p];
-
-            for(unsigned int k=0; k < D.cols(); k++) //matrix D --> cell1Ds_extrema
-            {
-                VectorXi edge = D.col(k);
-                unsigned int origin = edge[0];
-                unsigned int end = edge[1];
-
-                if ((u == origin && v == end) || (u == end && v == origin)) 
-                {
-                    C(j,i) = k;
-                }    
-            }
-        }
-    }
-    
     return true;
 }
 
@@ -173,24 +171,20 @@ void Export_polyhedron(Polyhedron &P)
 {
     //Cell0Ds.txt
     ofstream ofile1("Cell0Ds.txt");
-    ofile1 << "Id;ShortPath;X;Y;Z\n"; //header 
+    ofile1 << "Id;X;Y;Z\n"; //header 
     
     const MatrixXd &A = P.cell0Ds_coordinates;
     for(unsigned int id=0; id < P.num_cell0Ds; id++)
-    {
-        ofile1 << defaultfloat << id << ';' << 0 << ';' << scientific << setprecision(16) << A(0,id) << ';' << A(1,id) << ';' << A(2,id) << '\n';
-    }
+        ofile1 << defaultfloat << id << ';' << scientific << setprecision(16) << A(0,id) << ';' << A(1,id) << ';' << A(2,id) << '\n';
     ofile1.close();
 
     //Cell1Ds.txt
     ofstream ofile2("Cell1Ds.txt");
-    ofile2 << "Id;ShortPath;Origin;End\n"; //header
+    ofile2 << "Id;Origin;End\n"; //header
 
     const MatrixXi &B = P.cell1Ds_extrema;
     for(unsigned int id=0; id < P.num_cell1Ds; id++)
-    {
-        ofile2 << id << ';' << 0 << ';' << B(0,id) << ';' << B(1,id) << '\n';
-    }
+        ofile2 << id << ';' << B(0,id) << ';' << B(1,id) << '\n';
     ofile2.close();
 
     //Cell2Ds.txt
@@ -200,21 +194,18 @@ void Export_polyhedron(Polyhedron &P)
     /*We have to respect the sequential rule described in the pdf project, 
     but during the filling of the 2 matrix for cell2Ds properties, we already check this,
     we can easly read the matrix: cell2Ds_vertices and cell2Ds_edges*/
-    const MatrixXi &V = P.cell2Ds_vertices;
-    const MatrixXi &E = P.cell2Ds_edges;
+    const vector<vector<unsigned int>> &V = P.cell2Ds_vertices;
+    const vector<vector<unsigned int>> &E = P.cell2Ds_edges;
     for(unsigned int id=0; id < P.num_cell2Ds; id++)
     {
-        ofile3 << id << ';' << V.rows();
-        for(unsigned int i=0; i < V.rows(); i++)
-        {
-            ofile3 << ';' << V(i,id);
-        }
+        ofile3 << id << ';' << V[id].size();
+        for(unsigned int i=0; i < V[id].size(); i++)
+            ofile3 << ';' << V[id][i];
+        
+        ofile3 << ';' << E[id].size();
+        for(unsigned int j=0; j < E[id].size(); j++)
+            ofile3 << ';' << E[id][j];
 
-        ofile3 << ';' << E.rows();
-        for(unsigned int j=0; j < E.rows(); j++)
-        {
-            ofile3 << ';' << E(j,id);
-        }
         ofile3 << '\n';
     }
     ofile3.close();
@@ -245,7 +236,6 @@ void Visualize_polyhedron(Polyhedron &P)
     cout << "num_cell0Ds: " << P.num_cell0Ds << " (vertices V)" << endl;
     cout << "num_cell1Ds: " << P.num_cell1Ds << " (edges E)" << endl;
     cout << "num_cell2Ds: " << P.num_cell2Ds << " (faces F)" << endl;
-    cout << "num_cell3Ds: " << P.num_cell3Ds << " (polyhedron P)" << endl;
     cout << endl;
 
     cout << "cell0Ds_id = [";
@@ -263,13 +253,11 @@ void Visualize_polyhedron(Polyhedron &P)
         cout << ' ' << P.cell2Ds_id[i];
     cout << " ]" << " (faces id)" << endl;
 
-    cout << "cell3D_id = [ " << P.cell3D_id << " ]" << " (polyhedron id)" <<endl;
-    cout << endl;
 
     Eigen::MatrixXd &A = P.cell0Ds_coordinates;
     Eigen::MatrixXi &B = P.cell1Ds_extrema;
-    Eigen::MatrixXi &C = P.cell2Ds_vertices;
-    Eigen::MatrixXi &D = P.cell2Ds_edges;
+    vector<vector<unsigned int>> &C = P.cell2Ds_vertices;
+    vector<vector<unsigned int>> &D = P.cell2Ds_edges;
 
     cout<<"Cell0Ds_coordinates: "<<endl;
     cout<<A<<endl;
@@ -280,11 +268,25 @@ void Visualize_polyhedron(Polyhedron &P)
     cout<<endl;
     
     cout<<"Cell2Ds_vertices: "<<endl;
-    cout<<C<<endl;
+    for(unsigned int i=0; i < C.size(); i++){
+        cout<<'f'<<i<<": ";
+        vector<unsigned int> &face = C[i];
+        for(unsigned int j=0; j < face.size(); j++){
+            cout<<face[j]<<' ';
+        }
+        cout<<endl;
+    }
     cout<<endl;
 
     cout<<"Cell2Ds_edges: "<<endl;
-    cout<<D<<endl;
+    for(unsigned int i=0; i < D.size(); i++){
+        cout<<'f'<<i<<": ";
+        vector<unsigned int> &face = D[i];
+        for(unsigned int j=0; j < face.size(); j++){
+            cout<<face[j]<<' ';
+        }
+        cout<<endl;
+    }
     cout<<endl;
 }
 
@@ -292,44 +294,44 @@ void Visualize_polyhedron(Polyhedron &P)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 pair<vector<Eigen::Vector3d>, vector<Eigen::Vector3i>> Triangulation_basic_step(const Eigen::Vector3d &A, const Eigen::Vector3d &B, const Eigen::Vector3d &C, const unsigned int b)
 {
-    vector<Vector3d> vertici;
-    vector<Vector3i> triangoli;
+    vector<Vector3d> vertices;
+    vector<Vector3i> triangles;
 
-    //1. Genera i vertici in coordinate baricentriche
+    //1. Cause the vertices in baricentric coordinates
     for (int u = 0; u <= b; u++) {
         for (int v = 0; v <= (b - u); v++) {
             int w = b - u - v;
             Vector3d punto = (u * A + v * B + w * C) / b; 
-            vertici.push_back(punto); //C viene appeso per primo, B viene appeso in posizione b, A viene appeso in ultima posizone
+            vertices.push_back(punto); //C is the first one, B is at position b, A is the last one
         }
     }
 
-    //2. Genera i triangoli
+    //2. Cause the triangles
     for (int u = 0; u < b; u++) 
     {
         for (int v = 0; v < (b - u); v++) 
         {
-            // Calcola gli indici dei vertici per questa cella
+            // Compute the index of the vertices for this cell 
             int current_row_start = u * (b + 1) - (u * (u - 1)) / 2;
             int next_row_start = (u + 1) * (b + 1) - (u * (u + 1)) / 2;
 
-            int idx0 = current_row_start + v;          //(u, v)
-            int idx1 = next_row_start + v;             //(u+1, v)
-            int idx2 = current_row_start + v + 1;      //(u, v+1)
+            int idx0 = current_row_start + v;          //(u,v)
+            int idx1 = next_row_start + v;             //(u+1,v)
+            int idx2 = current_row_start + v + 1;      //(u,v+1)
             
-            // Aggiungi il triangolo "superiore"
-            triangoli.emplace_back(idx0, idx1, idx2);
+            // Add the "superior" triangle
+            triangles.emplace_back(idx0, idx1, idx2);
 
-            // Aggiungi il triangolo "inferiore" se non siamo al bordo
+            // Add the "inferior" triangle if we are not at the edge
             if (v < (b - u - 1)) 
             {
                 int idx3 = next_row_start + v + 1;     //(u+1, v+1)
-                triangoli.emplace_back(idx1, idx3, idx2);
+                triangles.emplace_back(idx1, idx3, idx2);
             }
         }
     }
 
-    return {vertici, triangoli};
+    return {vertices, triangles};
 }
 
 
@@ -338,12 +340,12 @@ void ClassI_polyhedron(Polyhedron &P, const unsigned int b, unsigned int p, unsi
 {   
     vector<Eigen::Vector3i> new_faces;
 
-    std::map<unsigned int, Eigen::Vector3d> map_id_vert_global; //mappa {id, vector} --> {id : vertex}
+    std::map<unsigned int, Eigen::Vector3d> map_id_vert_global; //map {key : val} --> {id : vertex}
     unsigned int new_id = 0;
 
     for(unsigned int i=0; i < P.num_cell2Ds; i++)
     {
-        Eigen::Vector3i face = P.cell2Ds_vertices.col(i);
+        vector<unsigned int> &face = P.cell2Ds_vertices[i];
         unsigned int id_A = face[0];
         unsigned int id_B = face[1];
         unsigned int id_C = face[2];
@@ -428,86 +430,25 @@ void ClassI_polyhedron(Polyhedron &P, const unsigned int b, unsigned int p, unsi
     P.num_cell1Ds = E;
     P.num_cell2Ds = F;
 
-    P.cell0Ds_id.reserve(V);
-    P.cell1Ds_id.reserve(E);
-    P.cell2Ds_id.reserve(F);
-    P.cell0Ds_id.clear();
-    P.cell1Ds_id.clear();
-    P.cell2Ds_id.clear();
-    for(unsigned int i=0; i < V ; i++) P.cell0Ds_id.push_back(i);
-    for(unsigned int i=0; i < E; i++) P.cell1Ds_id.push_back(i);
-    for(unsigned int i=0; i < F; i++) P.cell2Ds_id.push_back(i);
-
     //Fill cell0Ds_coordinates
     Eigen::MatrixXd &A = P.cell0Ds_coordinates;
     A = MatrixXd::Zero(3, V);
     for(auto &[k, v] : map_id_vert_global) A.col(k) = v;
 
     //Fill cell2Ds_vertices
-    Eigen::MatrixXi &B = P.cell2Ds_vertices;
-    B = MatrixXi::Zero(3, F);
-    for(unsigned int i=0; i < new_faces.size(); i++) B.col(i) = new_faces[i];
-
-    //Fill cell1Ds_extrema
-    Eigen::MatrixXi &C = P.cell1Ds_extrema;
-    C = MatrixXi::Zero(2, E);
-    map<unsigned int, set<unsigned int>> check_map; // {edge_id, set{origin, end}}
-    unsigned int id_edge = 0;
-    for(size_t f=0; f < F; f++)
+    vector<vector<unsigned int>> &B = P.cell2Ds_vertices;
+    B.reserve(F);
+    B.clear();
+    for(unsigned int i=0; i < new_faces.size(); i++) 
     {
-        Eigen::Vector3i &face = new_faces[f];
-        for(unsigned int i=0; i < 3; i++)
-        {
-            unsigned int origin = face[i];
-            unsigned int end = face[(i+1)%3];
-
-            bool to_add = true;
-            for(auto &[key, val] : check_map)
-            {
-                if(val.count(origin) + val.count(end) > 1) to_add = false;
-            }
-
-            if(to_add)
-            {   
-                set<unsigned int> s = {origin, end};
-                check_map.insert({id_edge, s});
-                id_edge++;
-            }
-        }
-    }
-
-    for(auto &[id, o_and_e] : check_map)
-    {
-        unsigned int origin = *(o_and_e.begin());
-        unsigned int end = *(std::next(o_and_e.begin()));
-        C(0,id) = origin;
-        C(1,id) = end;
+        Eigen::Vector3i &f = new_faces[i];
+        vector<unsigned int> face;
+        face.reserve(f.size());
+        for(unsigned int j=0; j < f.size(); j++) face.push_back(f[j]);
+        B.push_back(face);
     }
     
-    //Fill MatrixXi cell2Ds_edges
-    Eigen::MatrixXi &D = P.cell2Ds_edges;
-    D = MatrixXi::Zero(3, F);
-    for(unsigned int i=0; i < B.cols(); i++)
-    {
-        VectorXi face = B.col(i); //matrix B --> cell2Ds_vertices
-        for(unsigned int j=0; j < 3; j++)
-        {
-            unsigned int u = face[j];
-            unsigned int v = face[(j+1)%3];
-
-            for(unsigned int k=0; k < C.cols(); k++) //matrix C --> cell1Ds_extrema
-            {
-                VectorXi edge = C.col(k);
-                unsigned int origin = edge[0];
-                unsigned int end = edge[1];
-
-                if ((u == origin && v == end) || (u == end && v == origin)) 
-                {
-                    D(j,i) = k;
-                }    
-            }
-        }
-    }
+    finish_to_fill_struct(P);
 }
 
 
@@ -540,105 +481,54 @@ for (int i = 0; i<n; i++)
 };
 
 
-
-
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 vector<unsigned int> cycled_face_for_dual(vector<unsigned int>& face_new, MatrixXd& coord) {
     vector<unsigned int> ordered;
-    if(face_new.empty()) return ordered;
+    if (face_new.empty()) return ordered;
 
-    // Parametri di tolleranza
-    const double rel_epsilon = 1e-6;   // Tolleranza relativa
-    const double abs_epsilon = 1e-12;  // Tolleranza assoluta minima
-    const unsigned int invalid_id = numeric_limits<unsigned int>::max();
-
-    // Calcola la distanza minima tra i vertici
-    double min_dist = numeric_limits<double>::max();
-    for(unsigned int i = 0; i < face_new.size(); ++i) {
-        Vector3d p1 = coord.col(face_new[i]);
-        for(unsigned int j = i+1; j < face_new.size(); ++j) {
-            double d = (p1 - coord.col(face_new[j])).norm();
-            if(d < min_dist) min_dist = d;
-        }
+    //Compute the baricenter of the face
+    Vector3d baricenter = Vector3d::Zero();
+    for (auto id : face_new) {
+        baricenter += coord.col(id);
     }
+    baricenter /= face_new.size();
 
-    //TODO utilizza direttamente solo la tolleranza relativa --> MODIFICA
-    // Funzione di confronto con tolleranza ibrida
-    auto are_equal = [&](double a, double b) {
-        double diff = fabs(a - b);
-        double scale = max(fabs(a), fabs(b));
-        return diff <= max(abs_epsilon, rel_epsilon * scale);
-    };
+    //Calculate the normal to the face plane using three points
+    Vector3d p0 = coord.col(face_new[0]);
+    Vector3d p1 = coord.col(face_new[1]);
+    Vector3d p2 = coord.col(face_new[2]);
 
-    // Costruzione mappa delle adiacenze
-    map<unsigned int, pair<unsigned int, unsigned int>> adjacence_map;
-    for(unsigned int i = 0; i < face_new.size(); ++i) {
-        unsigned int id = face_new[i];
-        vector<pair<double, unsigned int>> neighbors;
-        Vector3d p = coord.col(id);
+    Vector3d v1 = p1 - p0;
+    Vector3d v2 = p2 - p0;
+    Vector3d normal = v1.cross(v2).normalized();
 
-        for(unsigned int j = 0; j < face_new.size(); ++j) {
-            if(i == j) continue;
-            unsigned int candidate = face_new[j];
-            double d = (p - coord.col(candidate)).norm();
+    //Reference direction from the center of gravity to the first point
+    Vector3d ref_dir = (p0 - baricenter).normalized();
 
-            if(are_equal(d, min_dist)) {
-                neighbors.emplace_back(d, candidate);
-            }
-        }
+    //Local coordinate system on the plane
+    Vector3d u_axis = ref_dir;
+    Vector3d v_axis = normal.cross(u_axis).normalized();
 
-        sort(neighbors.begin(), neighbors.end());
+    //Calculate the angle for each point-centroid vector projected onto the plane
+    vector<pair<double, unsigned int>> angle_id_pairs;
+    for (auto id : face_new) {
+        Vector3d vec = coord.col(id) - baricenter;
+        double x = vec.dot(u_axis);
+        double y = vec.dot(v_axis);
+        double angle = atan2(y, x); //arctangent gives me an angle in radians
         
-        if(neighbors.size() >= 2) {
-            adjacence_map[id] = {neighbors[0].second, neighbors[1].second};
-        } 
-        else if(neighbors.size() == 1) {
-            adjacence_map[id] = {neighbors[0].second, invalid_id};
-        } 
-        else {
-            adjacence_map[id] = {invalid_id, invalid_id};
-        }
+        //Correct the angle to be between 0 and 2pi
+        if (angle < 0) angle += 2 * M_PI; //M_PI = pi
+        
+        angle_id_pairs.emplace_back(angle, id); //using this I can forget to specify that I have to add a pair to the vector it's automatic
     }
 
-    // Attraversamento ciclico
-    ordered.push_back(face_new[0]);
-    unsigned int current = face_new[0];
-    unsigned int prev = invalid_id;
+    //Sort points based on calculated angle (std::sort --> growing order)
+    sort(angle_id_pairs.begin(), angle_id_pairs.end());
 
-    auto get_next = [&](unsigned int candidate) {
-        return (candidate != invalid_id) && 
-               (candidate != prev) && 
-               (find(ordered.begin(), ordered.end(), candidate) == ordered.end());
-    };
-
-    while(ordered.size() < face_new.size()) {
-        auto& neighbors = adjacence_map[current];
-        unsigned int next = invalid_id;
-
-        if(get_next(neighbors.first)) {
-            next = neighbors.first;
-        }
-        else if(get_next(neighbors.second)) {
-            next = neighbors.second;
-        }
-
-        if(next == invalid_id) break;
-
-        ordered.push_back(next);
-        prev = current;
-        current = next;
-    }
-
-    // Verifica finale del ciclo chiuso
-    if(!ordered.empty()) {
-        auto& last_neighbors = adjacence_map[ordered.back()];
-        bool is_closed = (last_neighbors.first == ordered[0]) || 
-                        (last_neighbors.second == ordered[0]);
-
-        if(!is_closed && ordered.size() == face_new.size()) {
-            reverse(ordered.begin(), ordered.end());
-        }
+    //I extract the ordered IDs
+    for (const auto& pair : angle_id_pairs) {
+        ordered.push_back(pair.second);
     }
 
     return ordered;
@@ -659,10 +549,10 @@ void Dualize(Polyhedron &P)
     Eigen::MatrixXd new_vertices = MatrixXd::Zero(3, old_F); 
 
     Eigen::MatrixXd old_vertices = P.cell0Ds_coordinates;
-    Eigen::MatrixXi old_faces = P.cell2Ds_vertices;
+    vector<vector<unsigned int>> &old_faces = P.cell2Ds_vertices;
     for(unsigned int i=0; i < old_F; i++)
     {
-        Eigen::VectorXi face = old_faces.col(i);
+        vector<unsigned int> &face = old_faces[i];
 
         //compute the baricenter of the face
         Eigen::Vector3d S = Vector3d::Zero();
@@ -692,114 +582,28 @@ void Dualize(Polyhedron &P)
         vector<unsigned int> candidate_face;
         for(unsigned int j=0; j < old_F; j++)
         {
-            Eigen::VectorXi face = P.cell2Ds_vertices.col(j);
+            vector<unsigned int> &f = P.cell2Ds_vertices[j];
             std::set<unsigned int> face_set;
-            for(unsigned int k=0; k < face.size(); k++) face_set.insert(face[k]); //fill teh set
+            for(unsigned int k=0; k < f.size(); k++) face_set.insert(f[k]); //fill teh set
 
             if(face_set.count(id) > 0) candidate_face.push_back(j);
         }
         //the candidate face must be cyclic
         vector<unsigned int> cyclyc = cycled_face_for_dual(candidate_face, P.cell0Ds_coordinates);
-        new_faces_by_vert.push_back(cyclyc);
-        
+        new_faces_by_vert.push_back(cyclyc);  
     }
 
-    
-    //TODO Dualize deve funzionare per i poliedri di Goldberg-->MODIFICARE
-    ////////// da tenere mi serve per le modifiche 
-    for(int i=0; i < new_faces_by_vert.size(); i++ )
-    {
-        cout<<"face n"<<i<<" :";
-        vector<unsigned int> &vec = new_faces_by_vert[i];
-
-        for(int j=0; j < vec.size(); j++) cout<<' '<<vec[j];
-        cout<<endl;
-    }
-
-    
     //Overload and fill cell2Ds_vertices
-    Eigen::MatrixXi &B = P.cell2Ds_vertices;
-    B = MatrixXi::Zero((new_faces_by_vert[0]).size(), old_V);
+    vector<vector<unsigned int>> &B = P.cell2Ds_vertices;
+    B.reserve(old_V);
+    B.clear();
+    B = new_faces_by_vert;
 
-    for(unsigned int i=0; i < new_faces_by_vert.size(); i++)
-    {
-        vector<unsigned int> &vec = new_faces_by_vert[i];
-        for(unsigned int j=0; j<vec.size(); j++)
-        {
-            B(j,i) = vec[j];
-        }
-    }
-
-    
-    ///////////
-    //Fill cell1Ds_extrema
-    Eigen::MatrixXi &C = P.cell1Ds_extrema;
-    C = MatrixXi::Zero(2, P.num_cell1Ds);
-    map<unsigned int, set<unsigned int>> check_map; // {edge_id, set{origin, end}}
-    unsigned int id_edge = 0;
-    for(size_t f=0; f < old_V; f++)
-    {
-        Eigen::VectorXi face = B.col(f);
-        for(unsigned int i=0; i < face.size(); i++)
-        {
-            unsigned int origin = face[i];
-            unsigned int end = face[(i+1)%(face.size())];
-
-            bool to_add = true;
-            for(auto &[key, val] : check_map)
-            {
-                if(val.count(origin) + val.count(end) > 1) to_add = false;
-            }
-
-            if(to_add && id_edge < P.num_cell1Ds)
-            {   
-                set<unsigned int> s = {origin, end};
-                check_map.insert({id_edge, s});
-                id_edge++;
-            }
-        }
-    }
-
-    for(auto &[id, o_and_e] : check_map)
-    {
-        unsigned int origin = *(o_and_e.begin());
-        unsigned int end = *(std::next(o_and_e.begin()));
-        C(0,id) = origin;
-        C(1,id) = end;
-    }
-    
-    
-    //TODO guarda se ci sono eventuali errori qui
-    //Fill MatrixXi cell2Ds_edges
-    Eigen::MatrixXi &D = P.cell2Ds_edges;
-    D = MatrixXi::Zero(new_faces_by_vert[0].size(), old_V);
-    for(unsigned int i=0; i < B.cols(); i++)
-    {
-        VectorXi f = B.col(i); //matrix B --> cell2Ds_vertices
-        for(unsigned int j=0; j < f.size(); j++)
-        {
-            unsigned int u = f[j];
-            unsigned int v = f[(j+1)%(f.size())];
-
-            for(unsigned int k=0; k < C.cols(); k++) //matrix C --> cell1Ds_extrema
-            {
-                VectorXi edge = C.col(k);
-                set<unsigned int> set_edge;
-                set_edge.insert(edge[0]);
-                set_edge.insert(edge[1]);
-
-                if ((set_edge.count(u) + set_edge.count(v) > 1) && u != v) 
-                {
-                    D(j,i) = k;
-                }    
-            }
-        }
-    }
-    
+    finish_to_fill_struct(P);   
 }
 
 
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 

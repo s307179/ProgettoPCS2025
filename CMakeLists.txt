@@ -57,7 +57,7 @@ add_executable(${PROJECT_NAME}
 
 
 # To read our core data base
-set(POLYHEDRON_TYPES "tetrahedron" "cube" "octahedron" "icosahedron" "dodecahedron")
+set(POLYHEDRON_TYPES "tetrahedron" "octahedron" "icosahedron")
 
 foreach(poly_type ${POLYHEDRON_TYPES})
     file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Platonic_solids/${poly_type}.txt  

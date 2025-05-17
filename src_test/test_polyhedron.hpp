@@ -13,8 +13,6 @@
 using namespace Eigen;
 using namespace PolyhedronLibrary;
 
-
-
 namespace PolyhedronLibrary {
 	// cubo già normalizzato
 TEST(TestPolyhedron, TestProjection)
@@ -78,7 +76,6 @@ TEST(TestPolyhedron, TestProjection2)
 		Test = false;
 	EXPECT_EQ(Test, 0);
 }}
-
 
 
 

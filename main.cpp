@@ -27,10 +27,10 @@ int main(int argc, char* argv[])
         cerr<<"Error: the platonic solid {p,q} could not be imported, check the values of p and q"<<endl;
         return 2;
     }
-    
+
     
     //To triangulate the polyhedron
-    if(b < 1 && c < 1)
+    if((b < 1 && c < 1))
     {
         cerr<<"Error: the polyhedron could not be triangulated, check the values of b and c"<<endl;
         return 3;
@@ -41,25 +41,20 @@ int main(int argc, char* argv[])
         if(b != 0) ClassI_polyhedron(P, b, p, q);
         else ClassI_polyhedron(P, c, p, q);
     }
-    
 
-    project_points_onto_sphere(P);
-    Visualize_polyhedron(P);
-
-    Dualize(P);
-    project_points_onto_sphere(P);
+    if(p != 3 && q == 3) Dualize(P);
 
     //To project the polyhedron in the unitary sphere
-	//project_points_onto_sphere(P);
+	project_points_onto_sphere(P);
 
     //To visulize by terminal a polyhedron
     Visualize_polyhedron(P);
 
     //To create the CellXs.txt files
-    //Export_polyhedron(P); 
+    Export_polyhedron(P); 
     
 	
-    //To export the polyhedron in Paraview
+    //To export the polyhedron in Paraview 
     Gedim::UCDUtilities utilities;
     utilities.ExportPoints("./Cell0Ds.inp",
                            P.cell0Ds_coordinates);

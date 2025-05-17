@@ -13,9 +13,17 @@ P: a Polyhedron struct
 return: the resul of import, true if is success, false otherwise */
 bool Import_platonic_solid(unsigned int p, unsigned int q, Polyhedron &P);
 
+
+/*Function to finish to fill the polyhedron struct using cell0Ds_coordinates and cell2Ds_vertices
+P: a Polyhedron struct 
+BE CAREFUL, should be used only after fill in the struct the numbers of cell, the coordinates matrix and cell2Ds_vertices*/
+void finish_to_fill_struct(Polyhedron &P);
+
+
 /*Function to export the polyhedron properties and it will create 4 files: Cell0Ds.txt, Cell1Ds.txt, Cell2Ds.txt, Cell3Ds.txt
 P: a Polyhedron struct */
 void Export_polyhedron(Polyhedron &P);
+
 
 /*Function to visulaize every properties of a input Polyhedron struct
 P: a Polyhedron struct*/
@@ -48,7 +56,14 @@ void project_points_onto_sphere(Polyhedron &P);
 P: a Polyhedron struct*/
 void Dualize(Polyhedron &P);
 
+
+/*Function to make cyclic an input face
+face_new: id of the face to order
+coord: the matrix with the coordinates of every point
+return: a cyclic version of face_new, with the ids ordered*/
 vector<unsigned int> cycled_face_for_dual(vector<unsigned int> &face_new, Eigen::MatrixXd &coord);
+
+
 
 }
 
