@@ -14,8 +14,8 @@ using namespace Eigen;
 using namespace PolyhedronLibrary;
 
 namespace PolyhedronLibrary {
-	// cubo già normalizzato
-TEST(TestPolyhedron, TestProjection)
+	// test the correct projection of an already normalized solid
+TEST(TestPolyhedron, TestProjection1)
 {	
     Polyhedron solid;
 	int n=8;
@@ -50,7 +50,7 @@ TEST(TestPolyhedron, TestProjection)
 }
 
 
-// tetraedro da normalizzare
+	// test the correct projection of a not normalized solid
 TEST(TestPolyhedron, TestProjection2)
 {	
     Polyhedron solid;
@@ -75,7 +75,78 @@ TEST(TestPolyhedron, TestProjection2)
 	if (!solid.cell0Ds_coordinates.isApprox(projectedSolid.cell0Ds_coordinates))
 		Test = false;
 	EXPECT_EQ(Test, 0);
-}}
+}
+
+
+	// Test the dualization of the tetrahedron
+TEST(TestPolyhedron, TestDualization1)
+{	
+	Polyhedron P;
+	unsigned int p = 3;
+	unsigned int q = 3;
+	ASSERT_TRUE(Import_platonic_solid(p, q, P));
+	Dualize(P);
+	unsigned int n = P.num_cell0Ds;
+	unsigned int m = P.num_cell1Ds;
+	MatrixXd expected_coords(n,3);
+	expected_coords <<  0.272166 , 0.471405 , 0.192450,
+ -0.544331,  0.000000 , 0.192450,
+0.272166 ,-0.471405  ,0.192450,
+0.000000  ,0.000000 ,-0.577350;
+	MatrixXi expected_edges(m,2);
+	expected_edges << 0,1,
+			1,2,
+			0,2,
+			2,3,
+			0,3,
+			1,3;
+	bool coords_match = P.cell0Ds_coordinates.isApprox(expected_coords.transpose(),1e-6);
+	bool edges_match = P.cell1Ds_extrema.isApprox(expected_edges.transpose());
+	EXPECT_TRUE(coords_match);
+	EXPECT_TRUE(edges_match);
+}
+
+
+	// Test the dualization of an octahedron
+TEST(TestPolyhedron, TestDualization2)
+{	
+	Polyhedron P;
+	unsigned int p = 3;
+	unsigned int q = 4;
+	ASSERT_TRUE(Import_platonic_solid(p, q, P));
+	Dualize(P);
+	unsigned int n = P.num_cell0Ds;
+	unsigned int m = P.num_cell1Ds;
+	MatrixXd expected_coords(n,3);
+	expected_coords <<     0.471405,  0.471405,  0.471405,
+-0.471405,  0.471405,  0.471405,
+ -0.471405, -0.471405,  0.471405,
+  0.471405, -0.471405,  0.471405,
+  0.471405, -0.471405, -0.471405,
+    0.471405,  0.471405, -0.471405,
+ -0.471405,  0.471405, -0.471405,
+ -0.471405, -0.471405, -0.471405;
+	MatrixXi expected_edges(m,2);
+	expected_edges << 0,1,
+					  1,2,
+					  2,3,
+					  0,3,
+					  3,4,
+					  4,5,
+					  0,5,
+					  1,6,
+					  5,6,
+					  2,7,
+					  6,7,
+					  4,7;		
+	bool coords_match = P.cell0Ds_coordinates.isApprox(expected_coords.transpose(),1e-6);
+	bool edges_match = P.cell1Ds_extrema.isApprox(expected_edges.transpose());
+	EXPECT_TRUE(coords_match);
+	EXPECT_TRUE(edges_match);
+};
+
+
+}
 
 
 
