@@ -43,7 +43,7 @@ int main(int argc, char* argv[])
     if(p != 3 && q == 3) Dualize(P);
 
     //To project the polyhedron in the unitary sphere
-	project_points_onto_sphere(P);
+    project_points_onto_sphere(P);
 
     //To visulize by terminal a polyhedron
     Visualize_polyhedron(P);

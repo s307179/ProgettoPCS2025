@@ -78,7 +78,7 @@ TEST(TestPolyhedron, TestProjection2)
 }
 
 
-	// Test the dualization of the tetrahedron
+// Test the dualization of the tetrahedron
 TEST(TestPolyhedron, TestDualization1)
 {	
 	Polyhedron P;
@@ -107,7 +107,7 @@ TEST(TestPolyhedron, TestDualization1)
 }
 
 
-	// Test the dualization of an octahedron
+// Test the dualization of an octahedron
 TEST(TestPolyhedron, TestDualization2)
 {	
 	Polyhedron P;

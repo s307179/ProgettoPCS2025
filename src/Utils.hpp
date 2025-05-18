@@ -64,6 +64,13 @@ return: a cyclic version of face_new, with ordered ids*/
 vector<unsigned int> cycled_face_for_dual(vector<unsigned int> &face_new, Eigen::MatrixXd &coord);
 
 
+/*Function that compute the triangulation of ClassII by input triangle ABC
+A: Eigen::Vector3d is one of the vertex of the input triangle
+B: Eigen::Vector3d is one of the vertex of the input triangle
+C: Eigen::Vector3d is one of the vertex of the input triangle
+b: an unsigned int that lead the triangulation
+return: a pair where the first element is a vector that contains the generated vertices, 
+        while the second one is a vector that contains the generated faces (with the local id vertices that make it)*/
 pair<vector<Eigen::Vector3d>, vector<Eigen::Vector3i>> classII_basic_step(const Eigen::Vector3d &A, const Eigen::Vector3d &B, const Eigen::Vector3d &C, const unsigned int b);
 
 
