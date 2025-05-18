@@ -35,13 +35,11 @@ int main(int argc, char* argv[])
         cerr<<"Error: the polyhedron could not be triangulated, check the values of b and c"<<endl;
         return 3;
     }
-    
-    if((b >= 1 && c == 0) || (b == 0 && c >=1)) //Class I (geodetic polyhedron)
-    {
-        if(b != 0) ClassI_polyhedron(P, b, p, q);
-        else ClassI_polyhedron(P, c, p, q);
-    }
 
+    if((b >= 1 && c == 0) || (b == 0 && c >=1) || (b == c && b != 0)) Triangulate(P, b, c);
+    
+
+    //To dualize the polyhedron
     if(p != 3 && q == 3) Dualize(P);
 
     //To project the polyhedron in the unitary sphere

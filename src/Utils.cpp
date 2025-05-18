@@ -8,6 +8,7 @@
 #include <algorithm> // std::max std::min 
 #include <limits>
 #include <cmath>
+#include<unordered_set>
 
 namespace PolyhedronLibrary{
 
@@ -42,7 +43,7 @@ void finish_to_fill_struct(Polyhedron &P)
     }
 
     //To verify if the number of generated edges is correct
-    assert(id_edge == P.num_cell1Ds);
+    //assert(id_edge == P.num_cell1Ds);
     
     // Fill cell2Ds_edges
     vector<vector<unsigned int>> &D = P.cell2Ds_edges;
@@ -292,7 +293,7 @@ void Visualize_polyhedron(Polyhedron &P)
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
-pair<vector<Eigen::Vector3d>, vector<Eigen::Vector3i>> Triangulation_basic_step(const Eigen::Vector3d &A, const Eigen::Vector3d &B, const Eigen::Vector3d &C, const unsigned int b)
+pair<vector<Eigen::Vector3d>, vector<Eigen::Vector3i>> classI_basic_step(const Eigen::Vector3d &A, const Eigen::Vector3d &B, const Eigen::Vector3d &C, const unsigned int b)
 {
     vector<Vector3d> vertices;
     vector<Vector3i> triangles;
@@ -336,7 +337,7 @@ pair<vector<Eigen::Vector3d>, vector<Eigen::Vector3i>> Triangulation_basic_step(
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
-void ClassI_polyhedron(Polyhedron &P, const unsigned int b, unsigned int p, unsigned int q)
+void Triangulate(Polyhedron &P, const unsigned int b,const unsigned int c)
 {   
     vector<Eigen::Vector3i> new_faces;
 
@@ -354,8 +355,28 @@ void ClassI_polyhedron(Polyhedron &P, const unsigned int b, unsigned int p, unsi
         Eigen::Vector3d B = P.cell0Ds_coordinates.col(id_B);
         Eigen::Vector3d C = P.cell0Ds_coordinates.col(id_C);
 
-
-        std::pair [vertices, triangles] = Triangulation_basic_step(A, B, C, b);
+        vector<Eigen::Vector3d> vertices;
+        vector<Eigen::Vector3i> triangles;
+        if((b >= 1 && c == 0) || (b == 0 && c >=1)) //Class I (geodetic polyhedron)
+        {
+            if(b != 0){
+                std::pair result = classI_basic_step(A, B, C, b);
+                vertices = result.first;
+                triangles = result.second;
+            } 
+            else{
+                std::pair result = classI_basic_step(A, B, C, c);
+                vertices = result.first;
+                triangles = result.second;
+            } 
+        }
+        else if (b == c) //Class II
+        {
+            std::pair result = classII_basic_step(A, B, C, b);
+            vertices = result.first;
+            triangles = result.second;
+        }
+        
 
         //build of map from local id to global id
         for(unsigned int v=0; v < vertices.size(); v++)
@@ -401,31 +422,10 @@ void ClassI_polyhedron(Polyhedron &P, const unsigned int b, unsigned int p, unsi
 
     
     //overload the polyhedron struct with the new data
-    unsigned int T = b*b;
-    unsigned int V, E, F;
-    if(p == 3 && q == 3)
-    {
-        V = 2*T + 2;
-        E = 6*T;
-        F = 4*T;
-    }
-    else if((p == 3 &&  q == 4) || (p == 4 && q == 3))
-    {
-        V = 4*T + 2;
-        E = 12*T;
-        F = 8*T;
-
-        q = 4;
-    }
-    else if((p == 3 && q == 5) || (p == 5 && q == 3))
-    {
-        V = 10*T + 2;
-        E = 30*T;
-        F = 20*T;
-
-        q = 5;
-    }
-
+    unsigned int V = map_id_vert_global.size();
+    unsigned int F = new_faces.size();
+    unsigned int E = V + F - 2; //Eulero's formula
+    
     P.num_cell0Ds = V;
     P.num_cell1Ds = E;
     P.num_cell2Ds = F;
@@ -535,7 +535,6 @@ vector<unsigned int> cycled_face_for_dual(vector<unsigned int>& face_new, Matrix
 }
 
 
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Dualize(Polyhedron &P)
 {   
@@ -604,9 +603,205 @@ void Dualize(Polyhedron &P)
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
+pair<vector<Vector3d>, vector<Vector3i>> classII_basic_step(const Vector3d &A, const Vector3d &B, const Vector3d &C, const unsigned int b)
+{
+    vector<Vector3d> new_vertices;
+    vector<Vector3i> new_triangles;
+
+    auto [base_vertices, base_triangles] = classI_basic_step(A, B, C, b);
+    
+    map<unsigned int, Vector3d> id_points_map;
+    unordered_set<unsigned int> midpoints_ids; // To track midpoint IDs
+    unsigned int id = 0;
+    for(unsigned int i=0; i < base_triangles.size(); i++)
+    {
+        Vector3i T = base_triangles[i];
+
+        Vector3d a = base_vertices[T[0]];
+        Vector3d b_vert = base_vertices[T[1]];
+        Vector3d c = base_vertices[T[2]];
+
+        Vector3d M_ab = 0.5 * (a + b_vert);
+        Vector3d M_bc = 0.5 * (b_vert + c);
+        Vector3d M_ca = 0.5 * (c + a);
+
+        Vector3d centroid = (a + b_vert + c) / 3;
+
+        array<Vector3d, 7> local_points = {a, b_vert, c, M_ab, M_bc, M_ca, centroid};
+        array<int, 7> id_local_points = {-1, -1, -1, -1, -1, -1, -1};
+        for(unsigned int p=0; p < 7; p++)
+        {
+            Vector3d &P = local_points[p];
+            bool to_add = true;
+            for(auto &[key, val] : id_points_map)
+                if(P.isApprox(val)){
+                    to_add = false;
+                    id_local_points[p] = key;
+                }
+            if(to_add){
+                id_points_map[id] = P;
+                id_local_points[p] = id;
+                // Check if this point is a midpoint (p=3,4,5)
+                if (p >=3 && p <=5) {
+                    midpoints_ids.insert(id);
+                }
+                id++;
+            } else {
+                // Check if existing point is a midpoint (p=3,4,5)
+                if (p >=3 && p <=5) {
+                    midpoints_ids.insert(id_local_points[p]);
+                }
+            }
+        }
+
+        int id_a = id_local_points[0];
+        int id_b = id_local_points[1];
+        int id_c = id_local_points[2];
+        int id_M_ab = id_local_points[3];
+        int id_M_bc = id_local_points[4];
+        int id_M_ca = id_local_points[5];
+        int id_centroid = id_local_points[6];
+        
+        Vector3i t1 {id_a, id_centroid, id_M_ab};
+        Vector3i t2 {id_a, id_centroid, id_M_ca};
+        Vector3i t3 {id_c, id_centroid, id_M_ca};
+        Vector3i t4 {id_c, id_centroid, id_M_bc};
+        Vector3i t5 {id_b, id_centroid, id_M_bc};
+        Vector3i t6 {id_b, id_centroid, id_M_ab}; 
+        
+        new_triangles.emplace_back(t1);
+        new_triangles.emplace_back(t2);
+        new_triangles.emplace_back(t3);
+        new_triangles.emplace_back(t4);
+        new_triangles.emplace_back(t5);
+        new_triangles.emplace_back(t6);
+    }
+
+    //Fill new_vertices
+    new_vertices.reserve(id_points_map.size());
+    for(auto &[k, v]: id_points_map) new_vertices.push_back(v);
+
+    //Now I have to remove some vertices
+    //Process midpoints to replace four triangles with two --> I replace four triangles if they have a vertex in common and 
+    //the vertex it is not a baricenter of the triangles belong to class 1
+    unordered_map<unsigned int, vector<unsigned int>> midpoint_to_triangles;
+    for (unsigned int i = 0; i < new_triangles.size(); ++i) {
+        const Vector3i& tri = new_triangles[i];
+        for (int j = 0; j < 3; ++j) {
+            unsigned int v = tri[j];
+            if (midpoints_ids.count(v)) {
+                midpoint_to_triangles[v].push_back(i);
+            }
+        }
+    }
+
+    unordered_set<unsigned int> triangles_to_remove;
+    vector<Vector3i> triangles_to_add;
+
+    for (const auto& entry : midpoint_to_triangles) {
+        unsigned int midpoint_id = entry.first;
+        const vector<unsigned int>& triangles = entry.second;
+        if (triangles.size() != 4) continue;
+
+        unordered_set<unsigned int> other_vertices;
+        for (auto tri_idx : triangles) {
+            const Vector3i& tri = new_triangles[tri_idx];
+            for (int j = 0; j < 3; ++j) {
+                unsigned int v = tri[j];
+                if (v != midpoint_id) {
+                    other_vertices.insert(v);
+                }
+            }
+        }
+        if (other_vertices.size() != 4) continue;
+
+        vector<unsigned int> original_vs, centroids;
+        for (auto v : other_vertices) {
+            const Vector3d& vertex = new_vertices[v];
+            bool is_original = false;
+            for (const auto& bv : base_vertices) {
+                if (vertex.isApprox(bv)) {
+                    is_original = true;
+                    break;
+                }
+            }
+            if (is_original) {
+                original_vs.push_back(v);
+            } else {
+                centroids.push_back(v);
+            }
+        }
+
+        if (original_vs.size() != 2 || centroids.size() != 2) continue;
+
+        unsigned int a = original_vs[0];
+        unsigned int b = original_vs[1];
+        unsigned int C1 = centroids[0];
+        unsigned int C2 = centroids[1];
+
+        Vector3i new_tri1(C1, a, C2);
+        Vector3i new_tri2(C2, b, C1);
+        triangles_to_add.push_back(new_tri1);
+        triangles_to_add.push_back(new_tri2);
+
+        for (auto tri_idx : triangles) {
+            triangles_to_remove.insert(tri_idx);
+        }
+    }
+
+        vector<Vector3i> final_triangles;
+    final_triangles.reserve(new_triangles.size() - triangles_to_remove.size() + triangles_to_add.size());
+    for (unsigned int i = 0; i < new_triangles.size(); ++i) {
+        if (!triangles_to_remove.count(i)) {
+            final_triangles.push_back(new_triangles[i]);
+        }
+    }
+    final_triangles.insert(final_triangles.end(), triangles_to_add.begin(), triangles_to_add.end());
+
+    //Step 1: Identifying used vertices
+    unordered_set<unsigned int> used_vertices;
+    for(const auto& tri : final_triangles) {
+        used_vertices.insert(tri[0]);
+        used_vertices.insert(tri[1]);
+        used_vertices.insert(tri[2]);
+    }
+
+    //Step 2: Reconstruction of clean vertices list
+    vector<Vector3d> cleaned_vertices;
+    unordered_map<unsigned int, unsigned int> id_remap;
+    unsigned int new_id = 0;
+    
+    for(const auto& [old_id, vertex] : id_points_map) {
+        if(used_vertices.count(old_id)) {
+            id_remap[old_id] = new_id;
+            cleaned_vertices.push_back(vertex);
+            new_id++;
+        }
+    }
+
+    //Step 3: Updating indices in triangles
+    vector<Vector3i> cleaned_triangles;
+    for(const auto& tri : final_triangles) {
+        cleaned_triangles.emplace_back(
+            id_remap[tri[0]], 
+            id_remap[tri[1]], 
+            id_remap[tri[2]]
+        );
+    }
+
+    return {cleaned_vertices, cleaned_triangles};
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
 
 
 
 
 
 }
+

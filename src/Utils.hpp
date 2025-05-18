@@ -37,14 +37,14 @@ C: Eigen::Vector3d is one of the vertex of the input triangle
 b: an unsigned int that lead the triangulation
 return: a pair where the first element is a vector that contains the generated vertices, 
         while the second one is a vector that contains the generated faces (with the local id vertices that make it)*/
-pair<vector<Eigen::Vector3d>, vector<Eigen::Vector3i>> Triangulation_basic_step(const Eigen::Vector3d &A, const Eigen::Vector3d &B, const Eigen::Vector3d &C, const unsigned int b);
+pair<vector<Eigen::Vector3d>, vector<Eigen::Vector3i>> classI_basic_step(const Eigen::Vector3d &A, const Eigen::Vector3d &B, const Eigen::Vector3d &C, const unsigned int b);
 
 
 /*Function that compute the triangulation of ClassI by input polyhedron using the function "Triangulation_basic_step"
 P: a Polyhedron struct
 b: an unsigned int that lead the triangulation
 p,q: unsigned int for the Schlafli's Simbol {p, q} */
-void ClassI_polyhedron(Polyhedron &P, const unsigned int b, unsigned int p, unsigned int q);
+void Triangulate(Polyhedron &P, const unsigned int b,const unsigned int c);
 
 
 /* Function to project each point of the polyhedron onto the sphere in the origin with unitary radius
@@ -60,9 +60,11 @@ void Dualize(Polyhedron &P);
 /*Function to make cyclic an input face
 face_new: id of the face to order
 coord: the matrix with the coordinates of every point
-return: a cyclic version of face_new, with the ids ordered*/
+return: a cyclic version of face_new, with ordered ids*/
 vector<unsigned int> cycled_face_for_dual(vector<unsigned int> &face_new, Eigen::MatrixXd &coord);
 
+
+pair<vector<Eigen::Vector3d>, vector<Eigen::Vector3i>> classII_basic_step(const Eigen::Vector3d &A, const Eigen::Vector3d &B, const Eigen::Vector3d &C, const unsigned int b);
 
 
 }
