@@ -9,6 +9,7 @@
 #include <limits>
 #include <cmath>
 #include<unordered_set>
+#include <queue>
 
 namespace PolyhedronLibrary{
 
@@ -794,7 +795,104 @@ pair<vector<Vector3d>, vector<Vector3i>> classII_basic_step(const Vector3d &A, c
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Short_path(Polyhedron &P, unsigned int id_D, unsigned int id_A)
+{
+    //Make the adjaceny list of the graph
+    Eigen::MatrixXi &edges = P.cell1Ds_extrema;
+    
+    vector<vector<unsigned int>> adj_list;
+    adj_list.reserve(P.num_cell0Ds);
+    for(unsigned int id=0; id < P.num_cell0Ds; id++){
+        vector<unsigned int> adj_to_id;
+        for(unsigned int j=0; j < edges.cols(); j++){
+            Eigen::Vector2i edge = edges.col(j);
+            unsigned int origin = edge[0];
+            unsigned int end = edge[1];
 
+            
+            if(id == origin) adj_to_id.push_back(end);
+            if(id == end) adj_to_id.push_back(origin);
+        }
+        adj_list.push_back(adj_to_id);
+    }
+
+
+    //Implementation of the BFS to look for short path between id_D and id_A
+    vector<unsigned int> path;
+    //Trivial case
+    if(id_D == id_A){
+        path.reserve(1);
+        path.push_back(id_D);
+        return;
+    }
+
+    //Other cases
+    const unsigned int N = P.num_cell0Ds;
+    vector<bool> visited(N, false);
+    vector<unsigned int> parent(N, N); //N = pivot value 
+    std::queue<unsigned int> q;
+
+    q.push(id_D);
+    visited[id_D] = true;
+    parent[id_D] = N;
+
+    bool stop = false;
+    while(!q.empty() || !stop){
+        unsigned int current = q.front();
+        q.pop();
+
+        //Explore the neighbours of current
+        for(unsigned int neighbour : adj_list[current]){
+            if(!visited[neighbour]){
+                visited[neighbour] = true;
+                parent[neighbour] = current;
+                q.push(neighbour);
+
+                //Stop if neighbours is id_A (destination)
+                if(neighbour == id_A)
+                {
+                    stop = true;
+                    break;
+                }     
+            }
+        }
+    }
+
+    //Reconstruct the path
+    unsigned int node = id_A;
+
+    while(node != N){
+        path.push_back(node);
+        node = parent[node];
+    }
+
+    std::reverse(path.begin(), path.end());
+
+    
+    ////////
+    cout<<"Path: ";
+    for(int i=0; i<path.size(); i++){
+        cout<<path[i]<<' ';
+    }
+    cout<<endl;
+
+    //Required output
+    cout<<"The shortest path that links v"<<id_D<<" and v"<<id_A<<" is "<<(path.size()-1)<<" sides long"<<endl;
+
+    double length = 0.0;
+    for(unsigned int i=0; i < path.size() - 1; i++){
+        unsigned int id_U = path[i];
+        unsigned int id_V = path[i+1];
+
+        Eigen::Vector3d U = P.cell0Ds_coordinates.col(id_U);
+        Eigen::Vector3d V = P.cell0Ds_coordinates.col(id_V);
+
+        length += (U-V).norm();
+
+    }
+    cout<<"The shortest path that links v"<<id_D<<" and v"<<id_A<<" is "<<length<<" long"<<endl;
+    
+}
 
 
 

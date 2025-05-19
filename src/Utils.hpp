@@ -73,6 +73,12 @@ return: a pair where the first element is a vector that contains the generated v
         while the second one is a vector that contains the generated faces (with the local id vertices that make it)*/
 pair<vector<Eigen::Vector3d>, vector<Eigen::Vector3i>> classII_basic_step(const Eigen::Vector3d &A, const Eigen::Vector3d &B, const Eigen::Vector3d &C, const unsigned int b);
 
+/*Function that computes the shortest path between the given vertices id_D and id_A
+and print the properties of the path (e.g length)
+P: a Polyhedron struct
+id_D, id_A: id of two vertices of the polyhedron P*/
+void Short_path(Polyhedron &P, unsigned int id_D, unsigned int id_A);
+
 
 }
 

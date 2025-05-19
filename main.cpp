@@ -51,7 +51,9 @@ int main(int argc, char* argv[])
     //To create the CellXs.txt files
     Export_polyhedron(P); 
     
-	
+	//TODO aggiungi check sugli id e gestisci gli id fa command line
+    Short_path(P, 82, 143);
+
     //To export the polyhedron in Paraview 
     Gedim::UCDUtilities utilities;
     utilities.ExportPoints("./Cell0Ds.inp",
