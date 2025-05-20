@@ -231,7 +231,7 @@ TEST(TestPolyhedron, TestClassII)
 
 // Test the shortest path algorithm
 
- TEST(TestPolyhedron, TestShortestPath){
+ TEST(TestPolyhedron, TestShortestPath1){
 	Polyhedron P;
 	unsigned int p = 3;
 	unsigned int q = 4;
@@ -249,14 +249,41 @@ TEST(TestPolyhedron, TestClassII)
     for(unsigned int i=0; i < path.size() - 1; i++){
         unsigned int id_U = path[i];
         unsigned int id_V = path[i+1];
-
         Eigen::Vector3d U = P.cell0Ds_coordinates.col(id_U);
         Eigen::Vector3d V = P.cell0Ds_coordinates.col(id_V);
         length += (U-V).norm();
 
     }
 	EXPECT_DOUBLE_EQ(length, 6/(sqrt(3)));
+ };
+	//Test 2
+
+TEST(TestPolyhedron, TestShortestPath2){
+	Polyhedron Q;
+	unsigned int p2 = 3;
+	unsigned int q2 = 4;
+	bool t2 = Import_platonic_solid(p2, q2, Q);
+	if(!t2){
+		cerr <<"Could not import the platonic solid"<<endl;
+	}
+	project_points_onto_sphere(Q);
+	unsigned int id_D2 = 0;
+	unsigned int id_A2 = 5;
+	vector<unsigned int> path2 = Short_path(Q, id_D2, id_A2);
+	
+
+	double length2 = 0.0;
+    for(unsigned int j=0; j < path2.size() - 1; j++){
+        unsigned int id_U = path2[j];
+        unsigned int id_V = path2[j+1];
+        Eigen::Vector3d U = Q.cell0Ds_coordinates.col(id_U);
+        Eigen::Vector3d V = Q.cell0Ds_coordinates.col(id_V);
+        length2 += (U-V).norm();
+
+    }
+	EXPECT_DOUBLE_EQ(length2, 2*sqrt(2));
 };
+
 
 
 

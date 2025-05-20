@@ -52,7 +52,7 @@ int main(int argc, char* argv[])
     Export_polyhedron(P); 
     
 	//TODO aggiungi check sugli id e gestisci gli id fa command line
-    Short_path(P, 0, 7);
+    Short_path(P, 0, 4);
 
     //To export the polyhedron in Paraview 
     Gedim::UCDUtilities utilities;
