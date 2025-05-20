@@ -229,6 +229,36 @@ TEST(TestPolyhedron, TestClassII)
 	EXPECT_TRUE(edges_match);
 };
 
+// Test the shortest path algorithm
+
+ TEST(TestPolyhedron, TestShortestPath){
+	Polyhedron P;
+	unsigned int p = 3;
+	unsigned int q = 4;
+	bool t = Import_platonic_solid(p, q, P);
+	if(!t){
+		cerr <<"Could not import the platonic solid"<<endl;
+	}
+	Dualize(P);
+	project_points_onto_sphere(P);
+	unsigned int id_D = 0;
+	unsigned int id_A = 7;
+	vector<unsigned int> path = Short_path(P, id_D, id_A);
+
+	double length = 0.0;
+    for(unsigned int i=0; i < path.size() - 1; i++){
+        unsigned int id_U = path[i];
+        unsigned int id_V = path[i+1];
+
+        Eigen::Vector3d U = P.cell0Ds_coordinates.col(id_U);
+        Eigen::Vector3d V = P.cell0Ds_coordinates.col(id_V);
+        length += (U-V).norm();
+
+    }
+	EXPECT_DOUBLE_EQ(length, 6/(sqrt(3)));
+};
+
+
 
 
 

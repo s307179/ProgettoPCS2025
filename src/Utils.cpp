@@ -795,7 +795,7 @@ pair<vector<Vector3d>, vector<Vector3i>> classII_basic_step(const Vector3d &A, c
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Short_path(Polyhedron &P, unsigned int id_D, unsigned int id_A)
+vector<unsigned int> Short_path(Polyhedron &P, unsigned int id_D, unsigned int id_A)
 {
     //Make the adjaceny list of the graph
     Eigen::MatrixXi &edges = P.cell1Ds_extrema;
@@ -823,7 +823,7 @@ void Short_path(Polyhedron &P, unsigned int id_D, unsigned int id_A)
     if(id_D == id_A){
         path.reserve(1);
         path.push_back(id_D);
-        return;
+        return path;
     }
 
     //Other cases
@@ -886,12 +886,11 @@ void Short_path(Polyhedron &P, unsigned int id_D, unsigned int id_A)
 
         Eigen::Vector3d U = P.cell0Ds_coordinates.col(id_U);
         Eigen::Vector3d V = P.cell0Ds_coordinates.col(id_V);
-
         length += (U-V).norm();
 
     }
     cout<<"The shortest path that links v"<<id_D<<" and v"<<id_A<<" is "<<length<<" long"<<endl;
-    
+    return path;
 }
 
 

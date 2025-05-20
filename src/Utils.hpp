@@ -77,7 +77,7 @@ pair<vector<Eigen::Vector3d>, vector<Eigen::Vector3i>> classII_basic_step(const 
 and print the properties of the path (e.g length)
 P: a Polyhedron struct
 id_D, id_A: id of two vertices of the polyhedron P*/
-void Short_path(Polyhedron &P, unsigned int id_D, unsigned int id_A);
+vector<unsigned int> Short_path(Polyhedron &P, unsigned int id_D, unsigned int id_A);
 
 
 }
