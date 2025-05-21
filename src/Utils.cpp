@@ -229,6 +229,9 @@ void Export_polyhedron(Polyhedron &P)
         ofile4 << ';' << id_face;
     ofile4 << '\n';
     ofile4.close();
+
+    cout<<"Cell0Ds.txt, Cell1Ds.txt, Cell2Ds.txt, Cell3Ds.txt files created"<<endl;
+    cout<<endl;
 }
 
 
