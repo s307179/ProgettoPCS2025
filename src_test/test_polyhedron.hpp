@@ -130,7 +130,7 @@ TEST(TestPolyhedron, TestDualization2)
 	bool edges_match = P.cell1Ds_extrema.isApprox(expected_edges.transpose());
 	EXPECT_TRUE(coords_match);
 	EXPECT_TRUE(edges_match);
-};
+}
 
 // Test the classI of a tetrahedron (b=1,c=0)
 TEST(TestPolyhedron, TestClassI1)
@@ -160,7 +160,7 @@ TEST(TestPolyhedron, TestClassI1)
 	bool edges_match = P.cell1Ds_extrema.isApprox(expected_edges.transpose());
 	EXPECT_TRUE(coords_match);
 	EXPECT_TRUE(edges_match);
-};
+}
 
 // Test the classI of a tetrahedron (b=0,c=1)
 TEST(TestPolyhedron, TestClassI2)
@@ -190,7 +190,7 @@ TEST(TestPolyhedron, TestClassI2)
 	bool edges_match = P.cell1Ds_extrema.isApprox(expected_edges.transpose());
 	EXPECT_TRUE(coords_match);
 	EXPECT_TRUE(edges_match);
-};
+}
 
 
 // Test the ClassII of a tetrahedron (b=c=1)
@@ -227,7 +227,7 @@ TEST(TestPolyhedron, TestClassII1)
 	bool edges_match = P.cell1Ds_extrema.isApprox(expected_edges.transpose());
 	EXPECT_TRUE(coords_match);
 	EXPECT_TRUE(edges_match);
-};
+}
 
 // Test the ClassII of a tetrahedron (b=c=2)
 
@@ -291,7 +291,7 @@ TEST(TestPolyhedron, TestClassII2)
 	bool edges_match = P.cell1Ds_extrema.isApprox(expected_edges.transpose());
 	EXPECT_TRUE(coords_match);
 	EXPECT_TRUE(edges_match);
-};
+}
 
 
 
@@ -324,7 +324,7 @@ TEST(TestPolyhedron, TestClassII2)
 
     }
 	EXPECT_DOUBLE_EQ(length, 6/(sqrt(3)));
- };
+ }
 	//Test 2 of the shortest path
 
 TEST(TestPolyhedron, TestShortestPath2){
@@ -351,7 +351,7 @@ TEST(TestPolyhedron, TestShortestPath2){
 
     }
 	EXPECT_DOUBLE_EQ(length2, 2*sqrt(2));
-};
+}
 
 
 

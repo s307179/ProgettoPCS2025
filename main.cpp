@@ -1,7 +1,7 @@
 #include <iostream>
 #include "Polyhedron.hpp"
 #include "Utils.hpp"
-#include "UCDutilities.hpp"
+#include "UCDUtilities.hpp"
 #include <unordered_set>
 
 using namespace std;
@@ -22,7 +22,6 @@ int main(int argc, char* argv[])
     const unsigned int c = stoi(argv[4]);
     int id_source = -1;
     int id_destination = -1;
-    cout<<id_source<<endl;
 
     Polyhedron P;
 
@@ -33,16 +32,6 @@ int main(int argc, char* argv[])
         return 2;
     }
 
-    //Check if the id source and destination are valid
-    if(argc == 7){
-        id_source = stoi(argv[5]);
-        id_destination = stoi(argv[6]);
-        if((id_source < 0 || id_source >= P.num_cell0Ds) || (id_destination < 0 || id_destination >= P.num_cell0Ds))
-        {
-            cerr<<"Error: the shortes path between "<<id_source<<" and "<<id_destination<<" could not be imported, check the values of id_source and id_destination"<<endl;
-            return 3;
-        }
-    }
 
     
     //To triangulate the polyhedron
@@ -69,6 +58,16 @@ int main(int argc, char* argv[])
     
     
     //////////////////////////
+    //Check if the id source and destination are valid
+    if(argc == 7){
+        id_source = stoi(argv[5]);
+        id_destination = stoi(argv[6]);
+        if((id_source < 0 || id_source >= P.num_cell0Ds) || (id_destination < 0 || id_destination >= P.num_cell0Ds))
+        {
+            cerr<<"Error: the shortes path between "<<id_source<<" and "<<id_destination<<" could not be imported, check the values of id_source and id_destination"<<endl;
+            return 3;
+        }
+    }
 	//ShortPath properties
     vector<Gedim::UCDProperty<double>> points_properties;
     vector<Gedim::UCDProperty<double>> segments_properties;
@@ -77,7 +76,7 @@ int main(int argc, char* argv[])
         
         //Fill data prop_vert
         vector<double> prop_vert(P.num_cell0Ds, 0.0);
-        for(unsigned int id_v : path) prop_vert[id_v] == 1.0;
+        for(unsigned int id_v : path) prop_vert[id_v] = 1.0;
         //Fill data prop_edges
         vector<double> prop_edges(P.num_cell1Ds, 0.0);
         for(unsigned int i=0; i < path.size() - 1; i++){
@@ -111,21 +110,25 @@ int main(int argc, char* argv[])
         edgeP.NumComponents = 1;
         edgeP.Data = prop_edges.data();
         segments_properties.push_back(edgeP);
+
+
+        //To export the polyhedron in Paraview 
+        Gedim::UCDUtilities utilities;
+        utilities.ExportPoints("./Cell0Ds.inp",
+                            P.cell0Ds_coordinates,
+                            points_properties);
+
+        utilities.ExportSegments("./Cell1Ds.inp",
+                                P.cell0Ds_coordinates,
+                                P.cell1Ds_extrema,
+                                points_properties,
+                            segments_properties);
+
     }
     /////////////////////////
     
 
-    //To export the polyhedron in Paraview 
-    Gedim::UCDUtilities utilities;
-    utilities.ExportPoints("./Cell0Ds.inp",
-                           P.cell0Ds_coordinates,
-                        points_properties);
-
-    utilities.ExportSegments("./Cell1Ds.inp",
-                             P.cell0Ds_coordinates,
-                             P.cell1Ds_extrema,
-                            points_properties,
-                        segments_properties);
+    
     
 	
     
