@@ -71,7 +71,7 @@ TEST(TestPolyhedron, TestDualization1)
 	Polyhedron P;
 	unsigned int p = 3;
 	unsigned int q = 3;
-	ASSERT_TRUE(Import_platonic_solid(p, q, P));
+	ASSERT_TRUE(Build_platonic_solid(p, q, P));
 	Dualize(P);
 	unsigned int n = P.num_cell0Ds;
 	unsigned int m = P.num_cell1Ds;
@@ -100,7 +100,7 @@ TEST(TestPolyhedron, TestDualization2)
 	Polyhedron P;
 	unsigned int p = 3;
 	unsigned int q = 4;
-	ASSERT_TRUE(Import_platonic_solid(p, q, P));
+	ASSERT_TRUE(Build_platonic_solid(p, q, P));
 	Dualize(P);
 	unsigned int n = P.num_cell0Ds;
 	unsigned int m = P.num_cell1Ds;
@@ -140,7 +140,7 @@ TEST(TestPolyhedron, TestClassI1)
 	unsigned int q = 3;
 	unsigned int b = 1;
 	unsigned int c = 0;
-	ASSERT_TRUE(Import_platonic_solid(p, q, P));
+	ASSERT_TRUE(Build_platonic_solid(p, q, P));
 	Triangulate(P,b,c);
 	unsigned int n = P.num_cell0Ds;
 	unsigned int m = P.num_cell1Ds;
@@ -170,7 +170,7 @@ TEST(TestPolyhedron, TestClassI2)
 	unsigned int q = 3;
 	unsigned int b = 0;
 	unsigned int c = 1;
-	ASSERT_TRUE(Import_platonic_solid(p, q, P));
+	ASSERT_TRUE(Build_platonic_solid(p, q, P));
 	Triangulate(P,b,c);
 	unsigned int n = P.num_cell0Ds;
 	unsigned int m = P.num_cell1Ds;
@@ -202,7 +202,7 @@ TEST(TestPolyhedron, TestClassII1)
 	unsigned int q = 3;
 	unsigned int b = 1;
 	unsigned int c = 1;
-	ASSERT_TRUE(Import_platonic_solid(p, q, P));
+	ASSERT_TRUE(Build_platonic_solid(p, q, P));
 	Triangulate(P,b,c);
 	MatrixXd expected_coords(14,3);
 	expected_coords <<-0.816497,1.41421,-0.57735,
@@ -238,7 +238,7 @@ TEST(TestPolyhedron, TestClassII2)
 	unsigned int q = 3;
 	unsigned int b = 2;
 	unsigned int c = 2;
-	ASSERT_TRUE(Import_platonic_solid(p, q, P));
+	ASSERT_TRUE(Build_platonic_solid(p, q, P));
 	Triangulate(P,b,c);
 	MatrixXd expected_coords(38,3);
 	expected_coords <<-8.1649660000000002e-01,1.4142140000000001e+00,-5.7735029999999998e-01,
@@ -304,7 +304,7 @@ TEST(TestPolyhedron, TestClassII2)
 	Polyhedron P;
 	unsigned int p = 3;
 	unsigned int q = 4;
-	bool t = Import_platonic_solid(p, q, P);
+	bool t = Build_platonic_solid(p, q, P);
 	if(!t){
 		cerr <<"Could not import the platonic solid"<<endl;
 	}
@@ -331,7 +331,7 @@ TEST(TestPolyhedron, TestShortestPath2){
 	Polyhedron Q;
 	unsigned int p2 = 3;
 	unsigned int q2 = 4;
-	bool t2 = Import_platonic_solid(p2, q2, Q);
+	bool t2 = Build_platonic_solid(p2, q2, Q);
 	if(!t2){
 		cerr <<"Could not import the platonic solid"<<endl;
 	}

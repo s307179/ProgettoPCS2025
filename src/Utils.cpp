@@ -87,79 +87,166 @@ void finish_to_fill_struct(Polyhedron &P)
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool Import_platonic_solid(unsigned int p, unsigned int q, Polyhedron &P)
+bool Build_platonic_solid(const int p, const int q, Polyhedron &P)
 {
     //To establish the corresponding platonic solid {p,q}
-    string poly_name;
     unsigned int V, E, F;
-    if(p == 3 && q == 3) 
+    if(p == 3 && q == 3) //tetrahedron  
     {
-        poly_name = "tetrahedron";
         V = 4;
         E = 6;
-        F = 4;   
+        F = 4;
+
+        //Fill the matrix cell0Ds_coordinates <--> matrix A
+        MatrixXd &A = P.cell0Ds_coordinates; 
+        A = MatrixXd::Zero(3, V);
+        Eigen::Vector3d v0(0.0, 0.0, 1.732051);
+        Eigen::Vector3d v1(1.632993, 0.0, -0.5773503);
+        Eigen::Vector3d v2(-0.8164966, 1.414214, -0.5773503);
+        Eigen::Vector3d v3(-0.8164966, -1.414214, -0.5773503);
+        A.col(0) = v0;
+        A.col(1) = v1;
+        A.col(2) = v2;
+        A.col(3) = v3;
+
+        //Fill the cell2Ds_vertices <--> B 
+        vector<vector<unsigned int>> &B = P.cell2Ds_vertices;
+        B.reserve(F);
+        vector<unsigned int> f0 = {0, 1, 2};
+        vector<unsigned int> f1 = {0, 2, 3};
+        vector<unsigned int> f2 = {0, 3, 1};
+        vector<unsigned int> f3 = {1, 3, 2};
+        B.push_back(f0);
+        B.push_back(f1);
+        B.push_back(f2);
+        B.push_back(f3);
     }
-    else if ((p == 3 && q == 4) || (p == 4 && q == 3 )) 
+    else if ((p == 3 && q == 4) || (p == 4 && q == 3 )) //octahedron
     {
-        poly_name = "octahedron";
         V = 6;
         E = 12;
         F = 8;
         
-        p = 3;
-        q = 4;
+        //Fill the matrix cell0Ds_coordinates <--> matrix A
+        MatrixXd &A = P.cell0Ds_coordinates; 
+        A = MatrixXd::Zero(3, V);
+        Eigen::Vector3d v0(0.0, 0.0, 1.414214);
+        Eigen::Vector3d v1(1.414214, 0.0, 0.0);
+        Eigen::Vector3d v2(0.0, 1.414214, 0.0);
+        Eigen::Vector3d v3(-1.414214, 0.0, 0.0);
+        Eigen::Vector3d v4(0.0, -1.414214, 0.0);
+        Eigen::Vector3d v5(0.0, 0.0, -1.414214);
+        A.col(0) = v0;
+        A.col(1) = v1; 
+        A.col(2) = v2;
+        A.col(3) = v3;
+        A.col(4) = v4;
+        A.col(5) = v5;
+
+        //Fill the cell2Ds_vertices <--> B 
+        vector<vector<unsigned int>> &B = P.cell2Ds_vertices;
+        B.reserve(F);
+        vector<unsigned int> f0 = {0, 1, 2};
+        vector<unsigned int> f1 = {0, 2, 3};
+        vector<unsigned int> f2 = {0, 3, 4};
+        vector<unsigned int> f3 = {0, 4, 1};
+        vector<unsigned int> f4 = {1, 4, 5};
+        vector<unsigned int> f5 = {1, 5, 2};
+        vector<unsigned int> f6 = {2, 5, 3};
+        vector<unsigned int> f7 = {3, 5, 4};
+        B.push_back(f0);
+        B.push_back(f1);
+        B.push_back(f2);
+        B.push_back(f3);
+        B.push_back(f4);
+        B.push_back(f5);
+        B.push_back(f6);
+        B.push_back(f7);
     }
-    else if ((p == 3 && q == 5) || (p == 5 && q == 3)) 
+    else if ((p == 3 && q == 5) || (p == 5 && q == 3)) //icosahedron
     {
-        poly_name = "icosahedron";
         V = 12;
         E = 30;
         F = 20;
         
-        p = 3;
-        q = 5;
+        //Fill the matrix cell0Ds_coordinates <--> matrix A
+        MatrixXd &A = P.cell0Ds_coordinates; 
+        A = MatrixXd::Zero(3, V);
+        Eigen::Vector3d v0(0.0, 0.0, 1.175571);
+        Eigen::Vector3d v1(1.051462, 0.0, 0.5257311);
+        Eigen::Vector3d v2(0.3249197, 1.0, 0.5257311);
+        Eigen::Vector3d v3(-0.8506508, 0.618034, 0.5257311);
+        Eigen::Vector3d v4(-0.8506508, -0.618034, 0.5257311);
+        Eigen::Vector3d v5(0.3249197, -1.0, 0.5257311);
+        Eigen::Vector3d v6(0.8506508, 0.618034, -0.5257311);
+        Eigen::Vector3d v7(0.8506508, -0.618034, -0.5257311);
+        Eigen::Vector3d v8(-0.3249197, 1.0, -0.5257311);
+        Eigen::Vector3d v9(-1.051462, 0.0, -0.5257311);
+        Eigen::Vector3d v10(-0.3249197, -1.0, -0.5257311);
+        Eigen::Vector3d v11(0.0, 0.0, -1.175571);
+        A.col(0) = v0;
+        A.col(1) = v1;
+        A.col(2) = v2;
+        A.col(3) = v3;
+        A.col(4) = v4;
+        A.col(5) = v5;
+        A.col(6) = v6;
+        A.col(7) = v7;
+        A.col(8) = v8;
+        A.col(9) = v9;
+        A.col(10) = v10;
+        A.col(11) = v11;
+
+        //Fill the cell2Ds_vertices <--> B 
+        vector<vector<unsigned int>> &B = P.cell2Ds_vertices;
+        B.reserve(F);
+        vector<unsigned int> f0 = {0, 1, 2};
+        vector<unsigned int> f1 = {0, 2, 3};
+        vector<unsigned int> f2 = {0, 3, 4};
+        vector<unsigned int> f3 = {0, 4, 5};
+        vector<unsigned int> f4 = {0, 5, 1};
+        vector<unsigned int> f5 = {1, 5, 7};
+        vector<unsigned int> f6 = {1, 7, 6};
+        vector<unsigned int> f7 = {1, 6, 2};
+        vector<unsigned int> f8 = {2, 6, 8};
+        vector<unsigned int> f9 = {2, 8, 3};
+        vector<unsigned int> f10 = {3, 8, 9};
+        vector<unsigned int> f11 = {3, 9, 4};
+        vector<unsigned int> f12 = {4, 9, 10};
+        vector<unsigned int> f13 = {4, 10, 5};
+        vector<unsigned int> f14 = {5, 10, 7};
+        vector<unsigned int> f15 = {6, 7, 11};
+        vector<unsigned int> f16 = {6, 11, 8};
+        vector<unsigned int> f17 = {7, 10, 11};
+        vector<unsigned int> f18 = {8, 11, 9};
+        vector<unsigned int> f19 = {9, 11, 10};
+        B.push_back(f0);
+        B.push_back(f1);
+        B.push_back(f2);
+        B.push_back(f3);
+        B.push_back(f4);
+        B.push_back(f5);
+        B.push_back(f6);
+        B.push_back(f7);
+        B.push_back(f8);
+        B.push_back(f9);
+        B.push_back(f10);
+        B.push_back(f11);
+        B.push_back(f12);
+        B.push_back(f13);
+        B.push_back(f14);
+        B.push_back(f15);
+        B.push_back(f16);
+        B.push_back(f17);
+        B.push_back(f18);
+        B.push_back(f19);
+
     }
     else return false;
     
     P.num_cell0Ds = V;
     P.num_cell1Ds = E;
     P.num_cell2Ds = F;
-
-    ifstream ifile("./" + poly_name + ".txt");
-    if(ifile.fail()) return false;
-
-    //Cell0Ds properties (vertices)
-    //Fill the matrix cell0Ds_coordinates <--> matrix A
-    MatrixXd &A = P.cell0Ds_coordinates; 
-    A = MatrixXd::Zero(3, V);
-    for(unsigned int i=0; i < V; i++)
-    {
-        char trash;
-        double x, y, z;
-        ifile >> trash >> x >> y >> z;
-        A(0,i) = x;
-        A(1,i) = y;
-        A(2,i) = z;    
-    }
-
-    //Cell2Ds properties (faces)
-    //Fill the matrix cell2Ds_vertices <--> matrix B 
-    vector<vector<unsigned int>> &B = P.cell2Ds_vertices;
-    B.reserve(F);
-    for(unsigned int i=0; i < F; i++)
-    {
-        char trash;
-        ifile >> trash;
-        vector<unsigned int> face;
-        face.reserve(p);
-        for(size_t j=0; j < p; j++)
-        {
-            unsigned int u;
-            ifile >> u;
-            face.push_back(u);
-        }
-        B.push_back(face);
-    }
 
     //Call the function to finish to fill the polyhedron struct  
     finish_to_fill_struct(P);
@@ -169,7 +256,7 @@ bool Import_platonic_solid(unsigned int p, unsigned int q, Polyhedron &P)
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Export_polyhedron(Polyhedron &P)
+void Export_polyhedron(const Polyhedron &P)
 {
     //Cell0Ds.txt
     ofstream ofile1("Cell0Ds.txt");
@@ -236,7 +323,7 @@ void Export_polyhedron(Polyhedron &P)
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Visualize_polyhedron(Polyhedron &P)
+void Visualize_polyhedron(const Polyhedron &P)
 {
     cout << "num_cell0Ds: " << P.num_cell0Ds << " (vertices V)" << endl;
     cout << "num_cell1Ds: " << P.num_cell1Ds << " (edges E)" << endl;
@@ -259,10 +346,10 @@ void Visualize_polyhedron(Polyhedron &P)
     cout << " ]" << " (faces id)" << endl;
 
 
-    Eigen::MatrixXd &A = P.cell0Ds_coordinates;
-    Eigen::MatrixXi &B = P.cell1Ds_extrema;
-    vector<vector<unsigned int>> &C = P.cell2Ds_vertices;
-    vector<vector<unsigned int>> &D = P.cell2Ds_edges;
+    const Eigen::MatrixXd &A = P.cell0Ds_coordinates;
+    const Eigen::MatrixXi &B = P.cell1Ds_extrema;
+    const vector<vector<unsigned int>> &C = P.cell2Ds_vertices;
+    const vector<vector<unsigned int>> &D = P.cell2Ds_edges;
 
     cout<<"Cell0Ds_coordinates: "<<endl;
     cout<<A<<endl;
@@ -275,7 +362,7 @@ void Visualize_polyhedron(Polyhedron &P)
     cout<<"Cell2Ds_vertices: "<<endl;
     for(unsigned int i=0; i < C.size(); i++){
         cout<<'f'<<i<<": ";
-        vector<unsigned int> &face = C[i];
+        const vector<unsigned int> &face = C[i];
         for(unsigned int j=0; j < face.size(); j++){
             cout<<face[j]<<' ';
         }
@@ -286,7 +373,7 @@ void Visualize_polyhedron(Polyhedron &P)
     cout<<"Cell2Ds_edges: "<<endl;
     for(unsigned int i=0; i < D.size(); i++){
         cout<<'f'<<i<<": ";
-        vector<unsigned int> &face = D[i];
+        const vector<unsigned int> &face = D[i];
         for(unsigned int j=0; j < face.size(); j++){
             cout<<face[j]<<' ';
         }
@@ -297,7 +384,7 @@ void Visualize_polyhedron(Polyhedron &P)
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
-pair<vector<Eigen::Vector3d>, vector<Eigen::Vector3i>> classI_basic_step(const Eigen::Vector3d &A, const Eigen::Vector3d &B, const Eigen::Vector3d &C, const unsigned int b)
+pair<vector<Eigen::Vector3d>, vector<Eigen::Vector3i>> classI_basic_step(const Eigen::Vector3d &A, const Eigen::Vector3d &B, const Eigen::Vector3d &C, const int b)
 {
     vector<Vector3d> vertices;
     vector<Vector3i> triangles;
@@ -341,7 +428,7 @@ pair<vector<Eigen::Vector3d>, vector<Eigen::Vector3i>> classI_basic_step(const E
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Triangulate(Polyhedron &P, const unsigned int b,const unsigned int c)
+void Triangulate(Polyhedron &P, const int b, const int c)
 {   
     vector<Eigen::Vector3i> new_faces;
 
@@ -364,12 +451,12 @@ void Triangulate(Polyhedron &P, const unsigned int b,const unsigned int c)
         if((b >= 1 && c == 0) || (b == 0 && c >=1)) //Class I (geodetic polyhedron)
         {
             if(b != 0){
-                std::pair result = classI_basic_step(A, B, C, b);
+                std::pair<vector<Eigen::Vector3d>, vector<Eigen::Vector3i>> result = classI_basic_step(A, B, C, b);
                 vertices = result.first;
                 triangles = result.second;
             } 
             else{
-                std::pair result = classI_basic_step(A, B, C, c);
+                std::pair<vector<Eigen::Vector3d>, vector<Eigen::Vector3i>> result = classI_basic_step(A, B, C, c);
                 vertices = result.first;
                 triangles = result.second;
             } 
@@ -486,7 +573,7 @@ for (int i = 0; i<n; i++)
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
-vector<unsigned int> cycled_face_for_dual(vector<unsigned int>& face_new, MatrixXd& coord) {
+vector<unsigned int> cycled_face_for_dual(vector<unsigned int>& face_new, const Eigen::MatrixXd& coord) {
     vector<unsigned int> ordered;
     if (face_new.empty()) return ordered;
 
@@ -607,7 +694,7 @@ void Dualize(Polyhedron &P)
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
-pair<vector<Vector3d>, vector<Vector3i>> classII_basic_step(const Vector3d &A, const Vector3d &B, const Vector3d &C, const unsigned int b)
+pair<vector<Eigen::Vector3d>, vector<Eigen::Vector3i>> classII_basic_step(const Eigen::Vector3d &A, const Eigen::Vector3d &B, const Eigen::Vector3d &C, const int b)
 {
     vector<Vector3d> new_vertices;
     vector<Vector3i> new_triangles;
@@ -798,10 +885,10 @@ pair<vector<Vector3d>, vector<Vector3i>> classII_basic_step(const Vector3d &A, c
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
-vector<unsigned int> Short_path(Polyhedron &P, unsigned int id_D, unsigned int id_A)
+vector<unsigned int> Short_path(const Polyhedron &P, const int id_D, const int id_A)
 {
     //Make the adjaceny list of the graph
-    Eigen::MatrixXi &edges = P.cell1Ds_extrema;
+    const Eigen::MatrixXi &edges = P.cell1Ds_extrema;
     
     vector<vector<unsigned int>> adj_list;
     adj_list.reserve(P.num_cell0Ds);
@@ -871,7 +958,6 @@ vector<unsigned int> Short_path(Polyhedron &P, unsigned int id_D, unsigned int i
 
     std::reverse(path.begin(), path.end());
 
-    
     ////////
     cout<<"Path: ";
     for(int i=0; i<path.size(); i++){
@@ -880,7 +966,7 @@ vector<unsigned int> Short_path(Polyhedron &P, unsigned int id_D, unsigned int i
     cout<<endl;
 
     //Required output
-    cout<<"The shortest path that links v"<<id_D<<" and v"<<id_A<<" is "<<(path.size()-1)<<" sides long"<<endl;
+    cout<<"The shortest path that links "<<id_D<<" and "<<id_A<<" is "<<(path.size()-1)<<" sides long"<<endl;
 
     double length = 0.0;
     for(unsigned int i=0; i < path.size() - 1; i++){
@@ -892,7 +978,7 @@ vector<unsigned int> Short_path(Polyhedron &P, unsigned int id_D, unsigned int i
         length += (U-V).norm();
 
     }
-    cout<<"The shortest path that links v"<<id_D<<" and v"<<id_A<<" is "<<length<<" long"<<endl;
+    cout<<"The shortest path that links "<<id_D<<" and "<<id_A<<" is "<<length<<" long"<<endl;
     return path;
 }
 

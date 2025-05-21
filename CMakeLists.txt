@@ -55,15 +55,6 @@ add_executable(${PROJECT_NAME}
       ${Polyhedron_SOURCES}
       ${Polyhedron_HEADERS})
 
-
-# To read our core data base
-set(POLYHEDRON_TYPES "tetrahedron" "octahedron" "icosahedron")
-
-foreach(poly_type ${POLYHEDRON_TYPES})
-    file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Platonic_solids/${poly_type}.txt  
-      DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-endforeach()
-
 target_link_libraries(${PROJECT_NAME} ${Polyhedron_LINKED_LIBRARIES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${Polyhedron_INCLUDES})
 target_compile_options(${PROJECT_NAME} PUBLIC -fPIC)
