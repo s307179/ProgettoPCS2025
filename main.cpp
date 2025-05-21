@@ -36,7 +36,7 @@ int main(int argc, char* argv[])
     if((b < 1 && c == 0) || (b == 0 && c < 1) || (c <= 0 && b <= 0) || (b < 0 && c > 0) || (b > 0 && c < 0))
     {
         cerr<<"Error: the polyhedron could not be triangulated, check the values of b and c"<<endl;
-        return 4;
+        return 3;
     }
     else Triangulate(P, b, c);
 
@@ -84,7 +84,7 @@ int main(int argc, char* argv[])
         if((id_source < 0 || id_source >= P.num_cell0Ds) || (id_destination < 0 || id_destination >= P.num_cell0Ds))
         {
             cerr<<"Error: the shortes path between "<<id_source<<" and "<<id_destination<<" could not be imported, check the values of id_source and id_destination"<<endl;
-            return 3;
+            return 4;
         }
         else
         {

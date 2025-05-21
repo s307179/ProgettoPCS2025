@@ -978,7 +978,7 @@ vector<unsigned int> Short_path(const Polyhedron &P, const int id_D, const int i
         length += (U-V).norm();
 
     }
-    cout<<"The shortest path that links "<<id_D<<" and "<<id_A<<" is "<<length<<" long"<<endl;
+    cout<<"The shortest path that links "<<id_D<<" and "<<id_A<<" is "<<length<<" long"<<endl<<endl;
     return path;
 }
 
