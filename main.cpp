@@ -41,7 +41,7 @@ int main(int argc, char* argv[])
     else Triangulate(P, b, c);
 
     //To dualize the polyhedron
-    if(q == 3) Dualize(P);
+    if(p!=3 && q == 3) Dualize(P);
 
     //To project the polyhedron in the unitary sphere
     project_points_onto_sphere(P);
