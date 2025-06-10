@@ -44,7 +44,7 @@ void finish_to_fill_struct(Polyhedron &P)
     }
 
     //To verify if the number of generated edges is correct
-    //assert(id_edge == P.num_cell1Ds);
+    assert(id_edge == P.num_cell1Ds);
     
     // Fill cell2Ds_edges
     vector<vector<unsigned int>> &D = P.cell2Ds_edges;
